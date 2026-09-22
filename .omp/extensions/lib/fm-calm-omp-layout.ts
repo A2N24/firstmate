@@ -41,10 +41,7 @@ const CALM_WORKING_SHIP_ROW = Symbol.for("firstmate:calm-omp-working-ship-row");
  */
 const CALM_ORIGINAL_MESSAGE = Symbol.for("firstmate:calm-omp-original-assistant-message");
 
-const CALM_TOOL_ROW_PATCH = Symbol.for("firstmate:calm-omp-tool-row:omp-18.1.16");
-const CALM_OPERATIONAL_USER_PATCH = Symbol.for("firstmate:calm-omp-operational-user:omp-18.1.16");
-const CALM_ASSISTANT_PATCH = Symbol.for("firstmate:calm-omp-assistant:omp-18.1.16");
-const CALM_WORKING_SHIP_PATCH = Symbol.for("firstmate:calm-omp-working-ship:omp-18.1.16");
+const CALM_OMP_PATCH = Symbol.for("firstmate:calm-omp-presentation:omp-18.1.16");
 
 /** The host package exports, as omp hands them to an extension through `ExtensionAPI.pi`. */
 export type OmpHostExports = Record<string, unknown>;
@@ -85,22 +82,63 @@ type AssistantMessageLike = {
   readonly content: readonly { readonly type: string; readonly text?: string }[];
 };
 
-let liveMode: InteractiveModeLike | undefined;
-
-/** Draw one boat frame for this width, installed by ../fm-calm.ts while Calm is on. */
-let shipFrame: ((width: number) => readonly string[]) | undefined;
-
 /**
- * The assistant rows whose message settled as mid-turn. omp hands its transcript
- * component a display slice with no tool calls and a plain `stop` reason, so the row
- * itself cannot answer the shared mid-turn question; the session's own message can, and
- * `reconcileCalmOmpAssistantRows` below is what carries that answer to the row.
+ * Every mutable thing the installed prototype wrappers read, held in one record on the
+ * global registry rather than in this module's own scope.
+ *
+ * omp re-imports an extension's whole module graph in-process with a cache-busting tag,
+ * so a reload creates a second instance of this module beside the first. The prototype
+ * wrappers a previous instance installed cannot be removed, and they would keep reading
+ * that instance's Calm state: `/calm` would flip a flag nothing draws from. Refreshing
+ * this record on every load, the way the Pi operational-row adapter refreshes its own,
+ * is what keeps the live wrappers reading the live extension.
  */
-const midTurnAssistantRows = new WeakSet<object>();
-
-const globalPatches = globalThis as typeof globalThis & {
-  [key: symbol]: boolean | undefined;
+type CalmOmpPatch = {
+  hidesToolRow(): boolean;
+  hidesOperationalInput(): boolean;
+  hidesWorkingNote(): boolean;
+  isOperationalInput(text: string): boolean;
+  calmIsActive(): boolean;
+  /** Draw one boat frame for this width, installed by ../fm-calm.ts while Calm is on. */
+  shipFrame?: (width: number) => readonly string[];
+  /**
+   * The assistant rows whose message settled as mid-turn. omp hands its transcript
+   * component a display slice with no tool calls and a plain `stop` reason, so the row
+   * itself cannot answer the shared mid-turn question; the session's own message can,
+   * and `reconcileCalmOmpAssistantRows` below is what carries that answer to the row.
+   */
+  midTurnRows: WeakSet<object>;
+  liveMode?: InteractiveModeLike;
+  /** The adapters already patched onto the host prototypes in this process. */
+  installed: Set<string>;
 };
+
+function registerCalmOmpPatch(): CalmOmpPatch {
+  const registry = globalThis as typeof globalThis & {
+    [key: symbol]: CalmOmpPatch | undefined;
+  };
+  // omp draws a tool call and its result as one component, so that one drawing answers
+  // for both classes and is hidden only when the policy hides each of them.
+  const decisions = {
+    hidesToolRow: () =>
+      calmPresentationHides("assistant-tool-call") && calmPresentationHides("tool-result"),
+    hidesOperationalInput: () => calmPresentationHides("synthetic-user"),
+    hidesWorkingNote: () => calmPresentationHides("assistant-working-note"),
+    isOperationalInput: isFirstmateOperationalPresentationText,
+    calmIsActive: calmPresentationIsActive,
+  };
+  const installed = registry[CALM_OMP_PATCH];
+  if (installed) return Object.assign(installed, decisions);
+  const patch: CalmOmpPatch = {
+    ...decisions,
+    midTurnRows: new WeakSet<object>(),
+    installed: new Set<string>(),
+  };
+  registry[CALM_OMP_PATCH] = patch;
+  return patch;
+}
+
+const patch = registerCalmOmpPatch();
 
 /**
  * The prototype of one host class, or a named failure the caller reports as an
@@ -165,16 +203,14 @@ export function installCalmOmpToolRowLayout(host: OmpHostExports): void {
     const prototype = hostPrototype(host, name);
     return { name, prototype, render: hostMethod(prototype, name, "render") };
   });
-  if (globalPatches[CALM_TOOL_ROW_PATCH]) return;
+  if (patch.installed.has("tool-row")) return;
   for (const seam of seams) {
     seam.prototype.render = function (this: RowComponent, width: number): readonly string[] {
-      if (calmPresentationHides("assistant-tool-call") && calmPresentationHides("tool-result")) {
-        return HIDDEN_ROWS;
-      }
+      if (patch.hidesToolRow()) return HIDDEN_ROWS;
       return seam.render.call(this as never, width as never) as readonly string[];
     };
   }
-  globalPatches[CALM_TOOL_ROW_PATCH] = true;
+  patch.installed.add("tool-row");
 }
 
 /**
@@ -190,14 +226,14 @@ export function installCalmOmpOperationalUserLayout(host: OmpHostExports): void 
   const prototype = hostPrototype(host, "InteractiveMode");
   const addMessageToChat = hostMethod(prototype, "InteractiveMode", "addMessageToChat");
   hostMethod(prototype, "InteractiveMode", "getUserMessageText");
-  if (globalPatches[CALM_OPERATIONAL_USER_PATCH]) return;
+  if (patch.installed.has("operational-user-row")) return;
 
   prototype.addMessageToChat = function (
     this: InteractiveModeLike,
     message: UserMessageLike,
     options?: unknown,
   ): unknown {
-    liveMode = this;
+    patch.liveMode = this;
     const children = this.chatContainer?.children;
     if (
       message?.role !== "user" ||
@@ -208,19 +244,19 @@ export function installCalmOmpOperationalUserLayout(host: OmpHostExports): void 
       return addMessageToChat.call(this as never, message as never, options as never);
     }
     const text = this.getUserMessageText(message);
-    if (!text || !isFirstmateOperationalPresentationText(text)) {
+    if (!text || !patch.isOperationalInput(text)) {
       return addMessageToChat.call(this as never, message as never, options as never);
     }
     const before = children.length;
     const result = addMessageToChat.call(this as never, message as never, options as never);
     for (const appended of children.slice(before) as RowComponent[]) {
       overrideRowDrawing(appended, CALM_HIDDEN_ROW, (stock, width) =>
-        calmPresentationHides("synthetic-user") ? HIDDEN_ROWS : stock(width),
+        patch.hidesOperationalInput() ? HIDDEN_ROWS : stock(width),
       );
     }
     return result;
   };
-  globalPatches[CALM_OPERATIONAL_USER_PATCH] = true;
+  patch.installed.add("operational-user-row");
 }
 
 /** Whether a message's content is text only, so its whole row is the text this adapter read. */
@@ -265,7 +301,7 @@ function carriedOriginalMessage(
 export function installCalmOmpAssistantLayout(host: OmpHostExports): void {
   const prototype = hostPrototype(host, "AssistantMessageComponent");
   const updateContent = hostMethod(prototype, "AssistantMessageComponent", "updateContent");
-  if (globalPatches[CALM_ASSISTANT_PATCH]) return;
+  if (patch.installed.has("assistant-working-note")) return;
 
   prototype.updateContent = function (
     this: object,
@@ -275,8 +311,8 @@ export function installCalmOmpAssistantLayout(host: OmpHostExports): void {
     const original = carriedOriginalMessage(message) ?? message;
     if (
       !original?.content ||
-      !calmPresentationHides("assistant-working-note") ||
-      !midTurnAssistantRows.has(this)
+      !patch.hidesWorkingNote() ||
+      !patch.midTurnRows.has(this)
     ) {
       return updateContent.call(this as never, original as never, options as never);
     }
@@ -294,7 +330,7 @@ export function installCalmOmpAssistantLayout(host: OmpHostExports): void {
     });
     return updateContent.call(this as never, presentation as never, options as never);
   };
-  globalPatches[CALM_ASSISTANT_PATCH] = true;
+  patch.installed.add("assistant-working-note");
 }
 
 /** One entry of omp's session branch, as this module reads it. */
@@ -312,7 +348,7 @@ export type CalmOmpBranchEntry = {
  * a resumed transcript restored.
  */
 export function reconcileCalmOmpAssistantRows(branch: readonly CalmOmpBranchEntry[]): void {
-  const components = liveMode?.transcriptMessageComponents;
+  const components = patch.liveMode?.transcriptMessageComponents;
   if (typeof components?.get !== "function") return;
   for (const entry of branch) {
     const message = entry?.message;
@@ -320,9 +356,9 @@ export function reconcileCalmOmpAssistantRows(branch: readonly CalmOmpBranchEntr
     const row = components.get(message);
     if (typeof row !== "object" || row === null) continue;
     const midTurn = calmAssistantMessageIsMidTurn(message);
-    if (midTurn === midTurnAssistantRows.has(row)) continue;
-    if (midTurn) midTurnAssistantRows.add(row);
-    else midTurnAssistantRows.delete(row);
+    if (midTurn === patch.midTurnRows.has(row)) continue;
+    if (midTurn) patch.midTurnRows.add(row);
+    else patch.midTurnRows.delete(row);
     const component: RowComponent = row as RowComponent;
     component.invalidate?.();
   }
@@ -346,40 +382,40 @@ export function installCalmOmpWorkingShip(host: OmpHostExports): void {
     "InteractiveMode",
     "ensureLoadingAnimation",
   );
-  if (globalPatches[CALM_WORKING_SHIP_PATCH]) return;
+  if (patch.installed.has("working-ship")) return;
 
   prototype.ensureLoadingAnimation = function (this: InteractiveModeLike): unknown {
-    liveMode = this;
+    patch.liveMode = this;
     const result = ensureLoadingAnimation.call(this as never);
     const loader = this.loadingAnimation;
     if (loader) {
       overrideRowDrawing(loader, CALM_WORKING_SHIP_ROW, (stock, width) => {
-        const frame = shipFrame?.(width);
-        return frame && calmPresentationIsActive() ? frame : stock(width);
+        const frame = patch.shipFrame?.(width);
+        return frame && patch.calmIsActive() ? frame : stock(width);
       });
     }
     return result;
   };
-  globalPatches[CALM_WORKING_SHIP_PATCH] = true;
+  patch.installed.add("working-ship");
 }
 
 /** Install or clear the boat drawing the working-row adapter paints. */
 export function setCalmOmpWorkingShipFrame(
   frame: ((width: number) => readonly string[]) | undefined,
 ): void {
-  shipFrame = frame;
+  patch.shipFrame = frame;
 }
 
 /** Whether omp currently has the working row mounted, so an idle ticker can stand down. */
 export function calmOmpWorkingRowIsMounted(): boolean {
-  const loader = liveMode?.loadingAnimation;
-  const mounted = liveMode?.statusContainer?.children;
+  const loader = patch.liveMode?.loadingAnimation;
+  const mounted = patch.liveMode?.statusContainer?.children;
   return loader !== undefined && Array.isArray(mounted) && mounted.includes(loader);
 }
 
 /** Ask omp to repaint. Silent before the live mode is captured, which is before anything is drawn. */
 export function calmOmpRequestRender(): void {
-  liveMode?.ui?.requestRender?.();
+  patch.liveMode?.ui?.requestRender?.();
 }
 
 /**
@@ -389,7 +425,7 @@ export function calmOmpRequestRender(): void {
  * screen keep the drawing they were emitted with; docs/calm.md owns that bound.
  */
 export function calmOmpRedrawTranscript(): void {
-  const mode = liveMode;
+  const mode = patch.liveMode;
   if (!mode) return;
   const children = mode.chatContainer?.children;
   if (Array.isArray(children)) {
@@ -401,5 +437,5 @@ export function calmOmpRedrawTranscript(): void {
 
 /** Drop the captured mode so a new session never redraws a retired screen. */
 export function resetCalmOmpLayout(): void {
-  liveMode = undefined;
+  patch.liveMode = undefined;
 }

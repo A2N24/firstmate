@@ -436,6 +436,46 @@ JS
   pass "a missing host seam skips only its own adapter and leaves /calm and the rest of Calm working"
 }
 
+# --- 4. an in-process reload ------------------------------------------------
+
+test_reload_keeps_the_toggle_driving_the_installed_wrappers() {
+  local repo="$TMP_ROOT/reload/repo" reloaded="$TMP_ROOT/reload/reloaded" home="$TMP_ROOT/reload/home"
+  install_fixture "$repo"
+  install_host "$repo"
+  # omp re-imports an extension's whole module graph in-process behind a cache-busting
+  # tag, so a reload runs a second, separate instance of every Calm module beside the
+  # first, against the same already-patched host prototypes. A copied tree reproduces
+  # exactly that: distinct module instances, one shared host.
+  cp -R "$repo" "$reloaded"
+  mkdir -p "$home/config"
+  printf 'off\n' > "$home/config/calm"
+  run_case "$repo" "reload" "FM_HOME=$home" "FM_RELOADED=$reloaded" <<'JS'
+import { pathToFileURL } from "node:url";
+import { fakePi, hostExports, InteractiveMode, ToolExecutionComponent } from "./host.js";
+
+const host = hostExports();
+const first = fakePi(host);
+const { default: factory } = await import(pathToFileURL(`${process.cwd()}/.omp/extensions/fm-calm.ts`).href);
+factory(first);
+first.handlers.get("session_start")({}, first.ctx(new InteractiveMode()));
+
+const reloaded = fakePi(host);
+const { default: reloadedFactory } = await import(pathToFileURL(`${process.env.FM_RELOADED}/.omp/extensions/fm-calm.ts`).href);
+reloadedFactory(reloaded);
+const ctx = reloaded.ctx(new InteractiveMode());
+reloaded.handlers.get("session_start")({}, ctx);
+
+const row = new ToolExecutionComponent(["tool row"]);
+if (row.render(80).length === 0) throw new Error("Calm was off but the tool row was already hidden");
+
+await reloaded.command.definition.handler("", ctx);
+if (row.render(80).length !== 0) {
+  throw new Error("the reloaded /calm did not reach the wrappers the first load installed");
+}
+JS
+  pass "after an in-process reload, /calm still drives the wrappers the earlier load installed"
+}
+
 test_command_toggles_and_persists_the_shared_preference
 test_preference_follows_the_shared_home_resolution
 test_unwritable_preference_leaves_the_choice_unchanged
@@ -443,3 +483,4 @@ test_tool_rows_hide_while_calm_is_on
 test_operational_user_rows_hide_and_near_misses_stay
 test_mid_turn_working_notes_follow_the_shared_preservation_rule
 test_missing_seam_degrades_only_its_own_adapter
+test_reload_keeps_the_toggle_driving_the_installed_wrappers

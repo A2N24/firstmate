@@ -923,6 +923,10 @@ Probed by loading an extension factory under `omp -p` and reading the live objec
 `.omp/extensions/fm-calm.ts` owns the preference, the `/calm` command, and the boat's cadence; `.omp/extensions/lib/fm-calm-omp-layout.ts` owns the four presentation adapters, each probing its own seam so a removed one degrades alone.
 Every decision comes from a shared owner: the visibility policy, the row policy, the preference file, the preservation rule, and the sprite geometry, with [`calm.md`](calm.md#omp) owning the exact omp visibility contract.
 
+omp imports an extension's whole module graph in-process behind an `?mtime` cache-buster, so a reload runs a second instance of every Calm module beside the first against the same already-patched host prototypes.
+The prototype wrappers the earlier instance installed cannot be removed, so the layout adapter keeps everything they read in one record on the global registry that each load refreshes, rather than in module scope: the visibility decisions, the mid-turn row set, the captured live mode, and the installed-adapter set.
+Without that, `/calm` after a reload would flip a flag the live wrappers never read; `tests/fm-calm-omp-extension.test.sh` reproduces exactly that by importing the extension twice from two copies of the tree over one shared host.
+
 The portable contract suite and the token-free live seam guard, on this host against the installed omp 18.1.16:
 
 ```text
@@ -934,6 +938,7 @@ ok - tool call, tool result, and folded read rows draw at zero height under Calm
 ok - a canonically classified operational user row hides under Calm, a near miss stays visible, and both restore
 ok - a short mid-turn note hides beside preserved substantive text, the final reply stays, and a toggle restores both
 ok - a missing host seam skips only its own adapter and leaves /calm and the rest of Calm working
+ok - after an in-process reload, /calm still drives the wrappers the earlier load installed
 
 $ bash tests/fm-calm-omp-seams-live.test.sh
 ok - omp omp/18.1.16: every host seam Calm's presentation adapters patch is still exported
