@@ -1,22 +1,23 @@
 # Calm mode
 
 Calm is Firstmate's conversation-only transcript presentation toggle.
-This page is for operators who turn Calm on and need to know what it hides and keeps visible on Pi and on Claude Code, and which file owns each part of that behavior.
+This page is for operators who turn Calm on and need to know what it hides and keeps visible on Pi, on omp, and on Claude Code, and which file owns each part of that behavior.
 
 ## Harness support and default
 
 | Harness | Support |
 | --- | --- |
 | Pi | Fully supported. |
+| omp (Oh My Pi) | Supported within the bounds the [omp](#omp) section below describes. |
 | Claude Code | Available behind that harness's default-off early-access function-hooks flag, as the [Claude Code](#claude-code) section below describes. |
 
 Calm is off by default.
-The last `/calm` choice persists for the effective Firstmate home across session starts and resumes on either harness.
-Both harnesses keep that choice in the one shared preference file that [`configuration.md`](configuration.md#calm-preference-configcalm) owns.
+The last `/calm` choice persists for the effective Firstmate home across session starts and resumes on every harness.
+Every harness keeps that choice in the one shared preference file that [`configuration.md`](configuration.md#calm-preference-configcalm) owns.
 
 ## Shared preservation rule for assistant text
 
-Across both harnesses, Calm evaluates each settled assistant text block from a model step that stopped to call tools, or that exhausted its token limit while carrying tool calls.
+Across every harness, Calm evaluates each settled assistant text block from a model step that stopped to call tools, or that exhausted its token limit while carrying tool calls.
 Calm hides such a block only in the first case below:
 
 | Settled block | Result |
@@ -157,9 +158,12 @@ How Calm handles that shared slot depends on whether Calm was already on when th
 - [`configuration.md`](configuration.md#calm-preference-configcalm) owns the persisted preference file and resolution rules.
 - `.pi/extensions/lib/fm-calm-visibility.ts` owns the visibility policy.
 - `.claude/mods/firstmate-calm/lib/fm-calm-preservation.ts` owns the shared substantive mid-turn text rule, which Pi imports through its tracked symlink.
+- `.pi/extensions/lib/fm-operational-input.ts` owns whether a user row is Firstmate operational input that Calm may hide.
+- `.pi/extensions/lib/fm-calm-row-policy.ts` owns whether an assistant message is mid-turn, for every Node-hosted harness.
+- `.pi/extensions/lib/fm-calm-preference.ts` owns the Node-side preference file that Pi and omp share.
 - `.pi/extensions/lib/fm-calm-operational-user-layout.ts` owns the zero-height operational-user row adapter.
 - `.pi/extensions/lib/fm-calm-pending-operational-layout.ts` owns the queued-row adapter and its session capability check.
-- `.pi/extensions/lib/fm-calm-working-ship.ts` owns Pi's animated working presentation over the sprite geometry both harnesses share in `.claude/mods/firstmate-calm/lib/fm-calm-working-ship-sprite.ts`.
+- `.pi/extensions/lib/fm-calm-working-ship.ts` owns Pi's animated working presentation over the sprite geometry every harness shares in `.claude/mods/firstmate-calm/lib/fm-calm-working-ship-sprite.ts`.
 
 ### Pi regression entry points
 
@@ -169,6 +173,42 @@ tests/fm-pi-branch-extension.test.sh
 tests/fm-pi-primary-types.test.sh
 tests/fm-calm-pi-queue-retention-live-e2e.test.sh
 FM_PI_LIVE_E2E=1 tests/fm-pi-primary-live-e2e.test.sh
+```
+
+## omp
+
+Calm on omp is `.omp/extensions/fm-calm.ts`, auto-discovered from the home's `.omp/extensions/` like the two supervision extensions beside it, with its adapters in `.omp/extensions/lib/fm-calm-omp-layout.ts`.
+`/calm` toggles the same per-home preference Pi's and Claude Code's `/calm` use, so one choice applies on every harness, and answers with a "Calm on" or "Calm off" line above the editor that Calm clears again after four seconds, leaving no transcript row; a preference that cannot be written leaves the current choice unchanged and says so on that same line.
+omp's own `notify()` is not used for that answer because its line stays standing in the transcript flow instead of expiring.
+
+While Calm is active and an agent run is under way, omp's stock working row (`Working...`) becomes the same two-row animated boat Pi draws, from the same shared sprite geometry and the same standard ANSI blue water and yellow boat, on the same cadences: the hull moves one column every 880ms while the wave advances one quarter-cell every 220ms.
+The boat occupies exactly the two rows the stock working row occupies, so nothing shifts when Calm changes, and it appears and disappears exactly where the stock row would because its lifetime stays omp's.
+A fresh session starts the boat at the normal initial position; within one session the next working period resumes it from its last rendered column and travel direction.
+
+Calm hides tool call rows, tool result rows, omp's folded read groups, canonically classified Firstmate operational user rows, and the mid-turn assistant working-note blocks governed by the shared preservation rule above.
+A user row the canonical operational-input parser does not recognize, including a near miss such as the same text without its invisible marker, stays visible.
+Every adapter reads the Calm choice when it draws, so toggling Calm hides or restores the rows already on the live screen, including tool rows and working notes drawn before the toggle; the terminal's own scrollback keeps whatever rendering it already scrolled away with.
+A working note is briefly visible while it streams, before its settled row collapses.
+Nothing is rewritten: hidden content stays in the message, the model context, session storage, and exports, and tool execution, input delivery, ordering, and diagnostics are unchanged.
+
+## omp compatibility
+
+Calm has no numeric omp version minimum or maximum and never refuses omp solely because its version is newer than a previously verified version.
+omp's extension UI context exposes no working-row visibility control and no collapsed-thinking label, and omp ships no built-in `ToolDefinition` factories, so unlike Pi, Calm reaches every row through `ExtensionAPI.pi`, the host package's own exports, and patches exactly one presentation method per adapter.
+Each adapter probes the exact host method it patches when Calm loads; if a future omp removes one, Calm logs a diagnostic naming the unavailable adapter and skips only that adapter, and `/calm`, the other adapters, and unrelated omp extensions remain available.
+
+Bounds of the omp support, verified on omp 18.1.16:
+
+- omp hands its transcript row a display slice with the tool calls removed and a plain `stop` reason, so the shared mid-turn rule is answered from the session's own settled messages and carried to the row through omp's message-to-component map. A row whose message never reaches that map keeps its stock drawing.
+- A transcript restored by a resumed session is classified at the session's first agent run rather than as it is drawn, so a restored working note is visible until then.
+- Expanded reasoning stays visible, as on Pi. omp draws nothing for thinking while its own thinking-block display is off, so Calm has no collapsed-thinking residue to hide and installs no adapter for it.
+- Rows the terminal has already scrolled out of the live screen keep the drawing they were emitted with, the same bound the Claude Code main-screen layout has.
+
+### omp regression entry points
+
+```sh
+tests/fm-calm-omp-extension.test.sh
+tests/fm-calm-omp-seams-live.test.sh
 ```
 
 ## Claude Code
