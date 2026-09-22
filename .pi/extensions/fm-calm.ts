@@ -18,15 +18,7 @@
 // session_start; and collision-check only the later first-activation path, when
 // getAllTools() is reliable. docs/calm-mode-feasibility.md owns the Pi-source evidence
 // and docs/calm.md owns the user-facing behavior and non-retroactive first-toggle bound.
-import { randomUUID } from "node:crypto";
-import {
-  mkdirSync,
-  readFileSync,
-  realpathSync,
-  renameSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { realpathSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type {
@@ -49,6 +41,11 @@ import { Box, Container, getKeybindings, type Component } from "@earendil-works/
 import type { TSchema } from "typebox";
 import { installCalmAssistantLayout } from "./lib/fm-calm-assistant-layout.ts";
 import { installCalmOperationalUserLayout } from "./lib/fm-calm-operational-user-layout.ts";
+import {
+  calmPreferencePath as resolveCalmPreferencePath,
+  readCalmPreference,
+  writeCalmPreference,
+} from "./lib/fm-calm-preference.ts";
 import {
   CALM_WORKING_SHIP_WIDGET_KEY,
   createCalmWorkingShipAnimation,
@@ -156,35 +153,12 @@ export default function (pi: ExtensionAPI) {
     }
   };
 
-  const fmHome = process.env.FM_HOME || process.env.FM_ROOT_OVERRIDE || root;
-  const configDirectory = process.env.FM_CONFIG_OVERRIDE || resolve(fmHome, "config");
-  const calmPreferencePath = resolve(configDirectory, "calm");
-  // "max" is the legacy value written by the removed third presentation level, whose
-  // behavior is now ordinary Calm; a home upgraded from it restores as on rather than
-  // dropping to off. docs/configuration.md owns the persisted value schema.
-  const loadCalmPreference = (): boolean => {
-    let stored: string;
-    try {
-      stored = readFileSync(calmPreferencePath, "utf8").trim();
-    } catch {
-      return false;
-    }
-    return stored === "on" || stored === "max";
-  };
-  const persistCalmPreference = (active: boolean): void => {
-    mkdirSync(dirname(calmPreferencePath), { recursive: true });
-    const temporaryPath = `${calmPreferencePath}.${process.pid}.${randomUUID()}.tmp`;
-    try {
-      writeFileSync(temporaryPath, active ? "on\n" : "off\n", {
-        encoding: "utf8",
-        flag: "wx",
-        mode: 0o600,
-      });
-      renameSync(temporaryPath, calmPreferencePath);
-    } finally {
-      rmSync(temporaryPath, { force: true });
-    }
-  };
+  // ./lib/fm-calm-preference.ts owns the shared file, its home resolution, its value
+  // schema, and its atomic write, so this extension and the omp one cannot drift.
+  const calmPreferencePath = resolveCalmPreferencePath(root);
+  const loadCalmPreference = (): boolean => readCalmPreference(calmPreferencePath);
+  const persistCalmPreference = (active: boolean): void =>
+    writeCalmPreference(calmPreferencePath, active);
 
   const publishPresentationState = (): void => {
     pi.events.emit(FIRSTMATE_CALM_PRESENTATION_EVENT, {

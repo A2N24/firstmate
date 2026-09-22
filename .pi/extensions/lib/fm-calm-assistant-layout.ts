@@ -10,6 +10,7 @@
 import type { AssistantMessageComponent as PiAssistantMessageComponent } from "@earendil-works/pi-coding-agent";
 import * as PiCodingAgent from "@earendil-works/pi-coding-agent";
 import { calmTextIsSubstantive } from "./fm-calm-preservation.ts";
+import { calmAssistantMessageIsMidTurn } from "./fm-calm-row-policy.ts";
 import { calmPresentationHides } from "./fm-calm-visibility.ts";
 
 type AssistantMessage = Parameters<PiAssistantMessageComponent["updateContent"]>[0];
@@ -25,19 +26,10 @@ type CalmAssistantLayoutPatch = {
   hidesWorkingNote: () => boolean;
 };
 
-// A mid-turn assistant message is one the model did not end its response with: Pi's
-// agent loop runs its tool calls and then issues another assistant message. stopReason
-// is intrinsic to each message and is already set while the message streams, so this
-// layout never has to ask whether the turn ended. It stays "pending" until the tool
-// call materializes, which is why a working note is briefly visible before it
-// collapses; suppressing pending text would also stop a genuine reply from streaming.
-function isMidTurnAssistantMessage(message: AssistantMessage): boolean {
-  if (message.stopReason === "toolUse") return true;
-  return (
-    message.stopReason === "length" &&
-    message.content.some((block) => block.type === "toolCall")
-  );
-}
+// ./fm-calm-row-policy.ts owns the mid-turn question both harnesses ask. A working note
+// stays "pending" until the tool call materializes, which is why it is briefly visible
+// before its settled row collapses; suppressing pending text would also stop a genuine
+// reply from streaming.
 
 // Keep the introduction-version symbol stable so a compatible upgrade cannot
 // double-patch a live process.
@@ -78,7 +70,7 @@ export function installCalmAssistantLayout(): void {
       patch.hidesThinking();
     const hideWorkingNote =
       patch.hidesWorkingNote() &&
-      isMidTurnAssistantMessage(message) &&
+      calmAssistantMessageIsMidTurn(message) &&
       message.content.some(
         (block) => block.type === "text" && !calmTextIsSubstantive(block.text),
       );

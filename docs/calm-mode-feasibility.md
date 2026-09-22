@@ -747,3 +747,91 @@ The flag-off session's settled screen, with the preference `on` on disk, drew Cl
 
 ✻ Sautéed for 8s · done 11:07 AM
 ```
+
+## 2026-09-22 omp 18.1.16 feasibility and the shipped extension
+
+omp (Oh My Pi) is a Pi fork, so its extension API keeps Pi's registration surface: `pi.registerCommand`, `session_start`, `agent_start`/`agent_end`, `ctx.ui.notify`, `ctx.ui.setWidget`, `registerMessageRenderer`, and `registerAssistantThinkingRenderer` all exist.
+What it does not keep is every seam Pi Calm uses, which is why `.omp/extensions/fm-calm.ts` is not a copy of the Pi extension.
+
+### What the omp extension API allows, per surface
+
+Probed by loading an extension factory under `omp -p` and reading the live objects, on omp 18.1.16:
+
+| Surface | Result on omp 18.1.16 |
+| --- | --- |
+| `ExtensionUIContext` methods | `notify`, `setStatus`, `setWorkingMessage`, `setWidget`, `setTitle`, `setEditorText`, `getEditorText`, `onTerminalInput`, `custom`, `getToolsExpanded`, `setToolsExpanded`, theme accessors. No `setWorkingVisible` and no `setHiddenThinkingLabel`, both of which Pi Calm depends on. |
+| Transient answer for `/calm` | Measured by setting each surface, waiting, and re-reading the settled screen: `notify()`'s line was still standing after a full later turn, so it is not transient; `setStatus(key, text)` followed by `setStatus(key, undefined)` removed the line and left nothing behind, as did a `setWidget` removal. Calm uses the status line. |
+| Background timers | `ctx.setInterval`/`ctx.setTimeout`/`ctx.clearTimer` exist on both the handler and command contexts. omp runs extensions in-process with no isolation and treats a raw timer callback's throw as a fatal uncaught exception, so the boat's cadence and the answer's expiry both use the managed timers. |
+| Built-in `ToolDefinition` factories | Absent. omp exports tool classes (`BashTool`, `ReadTool`, …) and renderer functions, not Pi's `create*ToolDefinition`, so Pi Calm's seven built-in wrappers have nothing to wrap and omp's first-registration-wins collision problem does not arise. |
+| `ExtensionAPI.pi` | Present, and identical objects to what `import "@earendil-works/pi-coding-agent"` resolves to inside an omp extension (the loader rewrites legacy Pi specifiers onto the host bundle). This is where every presentation seam below comes from. |
+| Tool rows | `ToolExecutionComponent.render` draws a tool call and its result as one block, and `ReadToolGroupComponent.render` draws a folded read group. Both already return no rows on their own zero-allocation path, so the transcript container handles a zero-height tool block natively. |
+| Operational user rows | `InteractiveMode.addMessageToChat` builds the row through a private presenter, and `UserMessageComponent`'s constructor signature differs from Pi's, so the Pi adapter's subclass cannot be reused. The rows that one call appends to the public `chatContainer` are reachable, so the adapter lets omp build the row and then owns its drawing. |
+| Mid-turn assistant text | `AssistantMessageComponent.updateContent` receives a display slice with its tool calls removed and `stopReason: "stop"`, for a mid-turn note and a final reply alike, so the shared mid-turn rule cannot be answered at that seam. `ctx.sessionManager.getBranch()` keeps the settled message with `stopReason: "toolUse"` and its `toolCall` block, and `InteractiveMode.transcriptMessageComponents` maps that exact message to the row that drew it, which is what makes the classification exact rather than a guess. |
+| Working row | `InteractiveMode.ensureLoadingAnimation` creates and re-mounts the row and is the one place a per-instance drawing can be installed; the stock row is two lines (`["", " ⠋ Working…"]`), the same height as the boat. `ctx.ui.setWidget` works but only above or below the editor, which would leave the stock row drawn as well. |
+| Collapsed thinking | omp draws nothing at all for a thinking block while its own thinking display is off, so there is no residual label to hide and Calm installs no adapter for it. |
+
+### Bounded gaps
+
+1. A transcript restored by a resumed session is classified at the session's first agent run rather than as it is drawn, because the live mode is not reachable before the restored rows are built; a restored working note is visible until then.
+2. Rows the terminal has already scrolled out of the live screen keep the drawing they were emitted with, the same bound the Claude Code main-screen layout has.
+3. Expanded reasoning stays visible, as on Pi.
+
+### The shipped extension
+
+`.omp/extensions/fm-calm.ts` owns the preference, the `/calm` command, and the boat's cadence; `.omp/extensions/lib/fm-calm-omp-layout.ts` owns the four presentation adapters, each probing its own seam so a removed one degrades alone.
+Every decision comes from a shared owner: the visibility policy, the row policy, the preference file, the preservation rule, and the sprite geometry, with [`calm.md`](calm.md#omp) owning the exact omp visibility contract.
+
+The portable contract suite and the token-free live seam guard, on this host against the installed omp 18.1.16:
+
+```text
+$ bash tests/fm-calm-omp-extension.test.sh
+ok - /calm toggles Calm, persists the shared per-home preference, and answers on a line that expires rather than a transcript row
+ok - the Calm preference resolves through FM_CONFIG_OVERRIDE ahead of FM_HOME
+ok - a preference that cannot be written leaves the current Calm choice unchanged and says so
+ok - tool call, tool result, and folded read rows draw at zero height under Calm and restore when it is off
+ok - a canonically classified operational user row hides under Calm, a near miss stays visible, and both restore
+ok - a short mid-turn note hides beside preserved substantive text, the final reply stays, and a toggle restores both
+ok - a missing host seam skips only its own adapter and leaves /calm and the rest of Calm working
+
+$ bash tests/fm-calm-omp-seams-live.test.sh
+ok - omp omp/18.1.16: every host seam Calm's presentation adapters patch is still exported
+```
+
+The seam guard was also driven against a deliberately wrong seam name to prove it fails loudly rather than passing vacuously:
+
+```text
+not ok - omp omp/18.1.16 no longer exports the host seams Calm patches: ReadToolGroupComponent.renderNope (see .omp/extensions/lib/fm-calm-omp-layout.ts and docs/calm.md)
+```
+
+The settled screen of a real omp 18.1.16 session with Calm on, after a prompt that called `bash` twice and narrated between the calls, with an operational user row and a near miss sent before it:
+
+```text
+ [fm-from-firstmate]NEARMISS_ROW_STAYS_VISIBLE
+
+ Say exactly "checking now." then use the bash tool to run echo HI, then reply with one short sentence.
+
+ The command printed HI.
+```
+
+The canonically marked operational row, both tool rows, and the `checking now.` working note are absent; the near miss and the final reply are drawn.
+The `/calm` answer that preceded this turn is absent too: it was shown on the status line above the editor and cleared four seconds later, where the earlier `notify()` version of the same answer was still standing above the prompt after the whole turn had finished.
+`/calm` off on the same screen restored all three in place:
+
+```text
+ Say exactly "checking now." then use the bash tool to run echo HI, then reply with one short sentence.
+
+ checking now.
+╭──────────────────────────────────────────────────────────────────────╮
+│ $ echo HI                                                            │
+├─── Output ───────────────────────────────────────────────────────────┤
+│ HI                                                                   │
+╰──────────────────────────────────────────────────────────────────────╯
+ The command printed HI.
+```
+
+The boat drawn in place of the stock working row during that run, at 120 columns:
+
+```text
+                             ◿│◣
+▁▁▁▁▁▂▂▂▃▃▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁╲▁▁▁╱▁▁▁▁▁▂▂▂▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▂▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▂
+```

@@ -286,7 +286,7 @@ family_for_basename() {
     fm-kimi-harness.test.sh|fm-devin-harness.test.sh|fm-muse-harness.test.sh|fm-rovo-harness.test.sh|fm-agy-harness.test.sh|fm-omp-harness.test.sh|fm-herdr-lab.test.sh|fm-lint.test.sh|\
     fm-lint-workflows.test.sh|\
     fm-operational-input.test.sh|fm-pi-primary-types.test.sh|\
-    fm-calm-claude-mod.test.sh|\
+    fm-calm-claude-mod.test.sh|fm-calm-omp-extension.test.sh|\
     fm-harness-adapter-references.test.sh|\
     fm-send-popup-settle.test.sh|fm-send-settle.test.sh|\
     fm-subagent-pretool-check.test.sh|\
@@ -362,6 +362,7 @@ family_for_basename() {
     fm-quota-array-dispatch-live-e2e.test.sh|fm-send-secondmate-marker-herdr-e2e.test.sh|\
     fm-send-inbox-doorbell-live-e2e.test.sh|\
     fm-calm-claude-mod-plugin.test.sh|fm-calm-claude-mod-live-e2e.test.sh|\
+    fm-calm-omp-seams-live.test.sh|\
     fm-herdr-submit-confirm-live-e2e.test.sh)
       printf '%s\n' live-harness-optin
       ;;
@@ -695,6 +696,8 @@ tests/fm-busy-state.test.sh 2990
 tests/fm-calm-claude-mod-live-e2e.test.sh 46
 tests/fm-calm-claude-mod-plugin.test.sh 172
 tests/fm-calm-claude-mod.test.sh 1252
+tests/fm-calm-omp-extension.test.sh 1520
+tests/fm-calm-omp-seams-live.test.sh 16082
 tests/fm-calm-pi-extension.test.sh 45128
 tests/fm-check-unregister.test.sh 464
 tests/fm-ci-workflow.test.sh 2073
@@ -1478,14 +1481,28 @@ families_for_changed_path() {
       ;;
     .pi/extensions/lib/fm-operational-input.ts)
       # The same rule for the operational-input library, whose reach is wider:
-      # every Pi extension that classifies or encodes operational text.
+      # every extension that classifies or encodes operational text.
       printf '%s\n' __script__:fm-pi-windows-shell-invocation.test.sh
       printf '%s\n' __script__:fm-pi-branch-extension.test.sh
       printf '%s\n' __script__:fm-pi-watch-extension.test.sh
       printf '%s\n' __script__:fm-calm-pi-extension.test.sh
+      printf '%s\n' __script__:fm-calm-omp-extension.test.sh
       printf '%s\n' __script__:fm-watch-recovery-loop.test.sh
       printf '%s\n' __script__:fm-turnend-guard.test.sh
       printf '%s\n' __script__:fm-sessionstart-nudge.test.sh
+      printf '%s\n' __script__:fm-pi-primary-types.test.sh
+      printf '%s\n' live-harness-optin
+      ;;
+    .omp/extensions/fm-calm.ts|.omp/extensions/lib/fm-calm-omp-layout.ts|\
+    .pi/extensions/lib/fm-calm-preference.ts|.pi/extensions/lib/fm-calm-row-policy.ts|\
+    .pi/extensions/lib/fm-calm-visibility.ts|.pi/extensions/lib/fm-calm-assistant-layout.ts|\
+    .pi/extensions/lib/fm-calm-operational-user-layout.ts|.pi/extensions/fm-calm.ts)
+      # Calm's shared policy and the two Node-hosted extensions that consume it: the
+      # portable checks for both harnesses, the Pi typecheck, and the guards that can
+      # only answer against a real Pi or omp.
+      printf '%s\n' __script__:fm-calm-pi-extension.test.sh
+      printf '%s\n' __script__:fm-calm-omp-extension.test.sh
+      printf '%s\n' __script__:fm-calm-claude-mod.test.sh
       printf '%s\n' __script__:fm-pi-primary-types.test.sh
       printf '%s\n' live-harness-optin
       ;;
@@ -1496,6 +1513,7 @@ families_for_changed_path() {
       # sprite, the Pi typecheck, and the Claude-dependent guards.
       printf '%s\n' __script__:fm-calm-claude-mod.test.sh
       printf '%s\n' __script__:fm-calm-pi-extension.test.sh
+      printf '%s\n' __script__:fm-calm-omp-extension.test.sh
       printf '%s\n' __script__:fm-pi-primary-types.test.sh
       printf '%s\n' live-harness-optin
       ;;
