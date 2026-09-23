@@ -237,7 +237,7 @@ Without that exact value, the mod is a complete no-op, even if Claude Code's rol
 ### Toggling Calm on Claude Code
 
 With the flag on, the mod registers `/calm`.
-It toggles the same per-home preference Pi's `/calm` uses, so one choice applies on both harnesses.
+It toggles the same per-home preference Pi's and omp's `/calm` use, so one choice applies on every harness.
 The toggle answers with a transient "Calm on" or "Calm off" notice under the prompt rather than a transcript row.
 A preference that cannot be written leaves the current choice unchanged, and the notice says so.
 The mod reads the preference before the first row draws.
@@ -259,7 +259,7 @@ On Claude Code the boat is painted in Claude Code's own theme colors rather than
 
 The theme family follows the `theme` setting by its prefix, `dark` or `light`, and is re-read when the theme changes.
 It uses the light set as the both-readable fallback for `auto`, custom, missing, or unreadable values.
-The Pi extension keeps its standard ANSI blue and yellow.
+The Pi and omp extensions keep their standard ANSI blue and yellow.
 
 ### Supervision notes on Claude Code
 
@@ -285,7 +285,6 @@ The mod only reads outcome and host state: the drain owns off-Pi read-cursor adv
 Only a home that runs the supervision host has outcomes to show.
 
 ### What Calm hides on Claude Code
-
 Tool rows, tool result blocks, and folded tool groups draw at zero height, so a turn that used tools takes the same space as one that did not.
 
 A user row draws at zero height when the canonical operational-input parser recognizes its text as one of these:
