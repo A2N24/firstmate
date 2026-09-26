@@ -389,16 +389,26 @@ fm_backlog_directory_present "$STATE" "state directory" || {
 # leases).
 # shellcheck source=bin/fm-lease-lib.sh
 . "$SCRIPT_DIR/fm-lease-lib.sh"
+META="$STATE/$ID.meta"
+TEARDOWN_REQUEST_KIND=ship
+if [ -f "$META" ] && [ ! -L "$META" ]; then
+  TEARDOWN_REQUEST_KIND=$(fm_meta_get "$META" kind)
+  [ -n "$TEARDOWN_REQUEST_KIND" ] || TEARDOWN_REQUEST_KIND=ship
+fi
+TEARDOWN_ACTOR=$(fm_lease_actor) || exit "$FM_LEASE_REFUSE_EXIT"
+if [ "$TEARDOWN_REQUEST_KIND" = secondmate ] && [ "$TEARDOWN_ACTOR" = branch ]; then
+  echo "error: secondmate retirement refused - this is main-only; the supervision branch cannot retire a secondmate" >&2
+  exit "$FM_LEASE_REFUSE_EXIT"
+fi
 # Role partition: forced teardown discards work, and the supervision branch
 # never discards anything - only an ordinary landed-work teardown is branch
 # territory (contract: bin/fm-lease-lib.sh).
-if [ "$FORCE" = --force ] && [ "$(fm_lease_actor)" = branch ]; then
+if [ "$FORCE" = --force ] && [ "$TEARDOWN_ACTOR" = branch ]; then
   echo "error: forced teardown refused - the supervision branch cannot discard work" >&2
   exit "$FM_LEASE_REFUSE_EXIT"
 fi
 fm_lease_guard "$ID" "teardown (fm-teardown)"
 
-META="$STATE/$ID.meta"
 TREEHOUSE_PROJECT_LOCK=
 TREEHOUSE_PROJECT_LOCK_HELD=0
 TREEHOUSE_SLOT_LOCK_REQUIRED=0
@@ -499,6 +509,13 @@ fm_backlog_record_present "$META" "task record" "$STATE" || {
 }
 TEARDOWN_META_KIND=$(fm_meta_get "$META" kind)
 [ -n "$TEARDOWN_META_KIND" ] || TEARDOWN_META_KIND=ship
+# Recheck the actor/type pair after the metadata lock: the early check above
+# gives an immediate refusal, while this one is authoritative against a kind
+# change between initial request parsing and locked metadata validation.
+if [ "$TEARDOWN_META_KIND" = secondmate ] && [ "$TEARDOWN_ACTOR" = branch ]; then
+  echo "error: secondmate retirement refused - this is main-only; the supervision branch cannot retire a secondmate" >&2
+  exit "$FM_LEASE_REFUSE_EXIT"
+fi
 # A secondmate's endpoint-liveness episodes (bin/fm-secondmate-liveness-lib.sh)
 # serialize on this lock; retirement holds it to the end so no probe or relaunch
 # can act on the route mid-teardown, and its relaunch ledger and park marker are

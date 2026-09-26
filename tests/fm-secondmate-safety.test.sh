@@ -1582,7 +1582,7 @@ EOF
   lease="$TMP_ROOT/teardown-fake/lease"
   printf 'domain\n' > "$lease"
   PATH="$fakebin:$PATH" FM_ROOT_OVERRIDE="$fmroot" FM_HOME="$home" FM_FAKE_TMUX_LOG="$log" FM_FAKE_TMUX_CAPTURE="$TMP_ROOT/teardown-fake/pane.txt" \
-    FM_FAKE_TREEHOUSE_LEASE_FILE="$lease" \
+    FM_FAKE_TREEHOUSE_LEASE_FILE="$lease" FM_SUPERVISION_ACTOR=main \
     "$ROOT/bin/fm-teardown.sh" domain >/dev/null 2>/dev/null \
     || fail "teardown failed for empty secondmate home"
   grep -F "treehouse return --force $subhome_abs" "$log" >/dev/null || fail "teardown did not release the secondmate home lease via treehouse return"
@@ -1591,6 +1591,37 @@ EOF
   [ ! -e "$home/state/domain.meta" ] || fail "teardown did not clear parent meta"
   grep -F -- '- domain ' "$home/data/secondmates.md" >/dev/null && fail "teardown did not remove secondmate registry route"
   pass "secondmate teardown retires empty homes and releases routing"
+}
+
+test_branch_actor_cannot_retire_secondmate() {
+  local home subhome subhome_abs fakebin log fmroot out rc
+  home="$TMP_ROOT/branch-retirement-home"
+  subhome="$TMP_ROOT/branch-retirement-subhome"
+  fmroot="$TMP_ROOT/branch-retirement-fmroot"
+  make_firstmate_git_root "$fmroot"
+  git -C "$fmroot" worktree add --quiet --detach "$subhome" HEAD
+  mkdir -p "$home/state" "$home/data" "$subhome/state"
+  printf 'domain\n' > "$subhome/.fm-secondmate-home"
+  subhome_abs=$(cd "$subhome" && pwd -P)
+  fm_write_secondmate_meta "$home/state/domain.meta" "$subhome"
+  printf -- '- domain - design domain (home: %s; scope: design domain; projects: alpha; added 2026-06-22)\n' \
+    "$subhome" > "$home/data/secondmates.md"
+  fakebin=$(make_fake_tmux "$TMP_ROOT/branch-retirement-fake")
+  log="$TMP_ROOT/branch-retirement-fake/tmux.log"
+
+  rc=0
+  out=$(PATH="$fakebin:$PATH" FM_ROOT_OVERRIDE="$fmroot" FM_HOME="$home" \
+    FM_FAKE_TMUX_LOG="$log" FM_FAKE_TMUX_CAPTURE="$TMP_ROOT/branch-retirement-fake/pane.txt" \
+    FM_SUPERVISION_ACTOR=branch "$ROOT/bin/fm-teardown.sh" domain 2>&1) || rc=$?
+  expect_code 6 "$rc" "branch actor must not retire a secondmate"
+  assert_contains "$out" 'secondmate retirement refused - this is main-only' \
+    "the refusal must name main-only secondmate retirement"
+  [ -f "$home/state/domain.meta" ] || fail "branch refusal removed the secondmate record"
+  [ -d "$subhome_abs" ] || fail "branch refusal removed the secondmate home"
+  grep -F -- '- domain ' "$home/data/secondmates.md" >/dev/null \
+    || fail "branch refusal removed the secondmate's registry route"
+  [ ! -s "$log" ] || fail "branch refusal acted on the secondmate endpoint: $(cat "$log")"
+  pass "branch actor cannot retire a secondmate and leaves its endpoint, home, record, and route intact"
 }
 
 test_secondmate_teardown_refuses_ambiguous_and_mismatched_registry_bindings() {
@@ -3041,6 +3072,7 @@ test_secondmate_spawn_requires_seeded_matching_home
 test_secondmate_spawn_refuses_operational_dirs_outside_subhome
 test_fm_send_refuses_bare_window_without_home_meta
 test_secondmate_teardown_retires_empty_home
+test_branch_actor_cannot_retire_secondmate
 test_secondmate_teardown_refuses_ambiguous_and_mismatched_registry_bindings
 test_secondmate_teardown_sweeps_process_events_before_removal
 test_secondmate_teardown_refuses_process_events_without_sweep_script

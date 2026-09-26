@@ -675,11 +675,11 @@ test_local_only_fork_remote_allows() {
   printf 'fm-branch-outcome-index-v1\t5\t0\t-\n' > "$case_dir/state/.task-x1.branch-outcome-index"
 
   set +e
-  run_teardown "$case_dir" > "$case_dir/stdout" 2> "$case_dir/stderr"
+  FM_SUPERVISION_ACTOR=branch run_teardown "$case_dir" > "$case_dir/stdout" 2> "$case_dir/stderr"
   rc=$?
   set -e
 
-  expect_code 0 "$rc" "fork-allow: teardown should succeed when HEAD is on a fork remote"
+  expect_code 0 "$rc" "fork-allow: branch actor teardown should still succeed for a landed ordinary task"
   ! grep -q REFUSED "$case_dir/stderr" || fail "fork-allow: teardown printed a REFUSED line"
   [ ! -e "$case_dir/state/.task-x1.branch-outcome-index" ] \
     || fail "fork-allow: teardown left the task's branch outcome index behind"
