@@ -4343,6 +4343,10 @@ if (keylessBlockedSpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, f
 writeFileSync(`${state}/task-a.meta`, `project=${project}\nwindow=fm-window\nkind=ship\n`);
 writeFileSync(`${state}/task-a.status`, `needs-decision [key=old-hold]: waiting\n${routineLine}`);
 writeFileSync(`${state}/.wake-queue`, "1\t1\tsignal\ttask-a.status\tsignal: task-a.status");
+const crewPiRegression = scopeForUnreadWake(state, false);
+if (crewPiRegression.eligibleSeqs.join(",") !== "1") {
+  throw new Error(`the Pi single-task signal behavior changed with a historical open decision: ${JSON.stringify(crewPiRegression)}`);
+}
 const crewWholeFileRegression = scopeForUnreadWake(state, false, false, true);
 if (crewWholeFileRegression.eligibleSeqs.includes("1")) {
   throw new Error(`the attended-host single-task behavior changed with an unrelated open decision: ${JSON.stringify(crewWholeFileRegression)}`);
