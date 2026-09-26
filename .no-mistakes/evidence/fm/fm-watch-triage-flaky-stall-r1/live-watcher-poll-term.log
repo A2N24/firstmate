@@ -1,0 +1,3 @@
+/bin/bash: line 1: 38668 Terminated: 15          FM_POLL=1 FM_SIGNAL_GRACE=1 FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=999999 FM_SECONDMATE_LIVENESS_SECS=99999999 bin/fm-watch.sh > "$LAB/watch.out" 2>&1
+single_term_exit=yes
+downtime_marker=yes stale_singleton=no

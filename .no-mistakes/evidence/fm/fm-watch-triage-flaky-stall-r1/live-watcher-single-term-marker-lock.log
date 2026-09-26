@@ -1,0 +1,8 @@
+watcher_poll_registered=yes
+foreign_marker_lock_held=yes
+/bin/bash: line 1: 16953 Terminated: 15          FM_POLL=1 FM_SIGNAL_GRACE=1 FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=999999 FM_SECONDMATE_LIVENESS_SECS=99999999 bin/fm-watch.sh > "$LAB/watch.out" 2>&1
+single_term_exit=yes_after_9_ticks
+stale_singleton_owner_matches_watcher=yes
+stale_singleton_cleared=yes
+watcher_output:
+watcher: recovery state could not be persisted; retaining stale lock evidence

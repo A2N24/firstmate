@@ -1,0 +1,6 @@
+bound=00 held_after_TERM=1s watcher_alive=yes
+/bin/bash: line 1: 25436 Terminated: 15          FM_WATCHER_CLEANUP_LOCK_BOUND="$bound" FM_POLL=1 FM_SIGNAL_GRACE=1 FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=999999 FM_SECONDMATE_LIVENESS_SECS=99999999 bin/fm-watch.sh > "$LAB/watch.out" 2>&1
+bound=00 stale_singleton=no downtime_marker=yes
+bound=08 held_after_TERM=4s watcher_alive=yes
+/bin/bash: line 1: 27349 Terminated: 15          FM_WATCHER_CLEANUP_LOCK_BOUND="$bound" FM_POLL=1 FM_SIGNAL_GRACE=1 FM_CHECK_INTERVAL=999999 FM_HEARTBEAT=999999 FM_SECONDMATE_LIVENESS_SECS=99999999 bin/fm-watch.sh > "$LAB/watch.out" 2>&1
+bound=08 stale_singleton=no downtime_marker=yes
