@@ -1,4 +1,5 @@
 import { lstatSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { runCommandAsync } from "./fm-async-exec.ts";
 
@@ -226,6 +227,11 @@ function decisionKey(line: string): string | null {
   return /^[A-Za-z0-9._-]+$/.test(key) ? key : null;
 }
 
+function explicitDecisionKey(line: string): string | null {
+  const match = line.match(/\[key=([A-Za-z0-9._-]+)\]/);
+  return match?.[1] ?? null;
+}
+
 function statusLineNote(line: string): string {
   const colon = line.indexOf(":");
   if (colon < 0) return line;
@@ -254,12 +260,12 @@ function statusFileVersion(path: string): string | null {
   }
 }
 
-function hasOpenNeedsDecision(
+function openDecisions(
   lines: readonly string[],
   resolveVerb: string,
   heldVerb: string,
   reservedPrefixes: readonly string[],
-): boolean {
+): Map<string, "needs-decision" | "blocked"> {
   const open = new Map<string, "needs-decision" | "blocked">();
   for (const line of lines) {
     const verb = statusLineVerb(line);
@@ -272,7 +278,69 @@ function hasOpenNeedsDecision(
     if (verb === "needs-decision" || verb === "blocked") open.set(key, verb);
     else open.delete(key);
   }
-  return [...open.values()].includes("needs-decision");
+  return open;
+}
+
+function hasOpenNeedsDecision(
+  lines: readonly string[],
+  resolveVerb: string,
+  heldVerb: string,
+  reservedPrefixes: readonly string[],
+): boolean {
+  return [...openDecisions(lines, resolveVerb, heldVerb, reservedPrefixes).values()].includes("needs-decision");
+}
+
+// Read the exact new status span recorded by fm-classify-lib.sh's
+// state/.status-presentation-cursor. Unsupported identities and malformed
+// cursors conservatively use offset zero, matching that file's safe fallback.
+function statusFileIdentity(path: string): string {
+  const darwin = process.platform === "darwin";
+  const output = execFileSync("stat", darwin ? ["-f", "%d:%i|%B|%FB", path] : ["-c", "%d:%i|%W|%w", path], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  }).trim();
+  const [deviceInode, birthEpoch, birthText] = output.split("|");
+  if (!deviceInode || !birthEpoch) throw new Error("status identity unavailable");
+  return birthEpoch !== "0" && birthText ? `strong:${deviceInode}:${birthText}` : `weak:${deviceInode}`;
+}
+
+function statusUnreadSpan(state: string, task: string, path: string, contents: string): string[] {
+  const size = Buffer.byteLength(contents);
+  let offset = 0;
+  try {
+    const manifest = readFileSync(`${state}/.status-presentation-cursor`, "utf8");
+    const rows = manifest.split(/\r?\n/).filter(Boolean);
+    const parsed = rows.map((row) => row.split("\t"));
+    const valid = parsed.every((fields) => fields.length === 4 && fields[0] !== "" && fields[1] !== "" &&
+      /^[0-9]+$/.test(fields[2]) && /^[0-9]+$/.test(fields[3]));
+    const matches = parsed.filter((fields) => fields[0] === task);
+    if (valid && new Set(parsed.map((fields) => fields[0])).size === parsed.length && matches.length === 1) {
+      const recorded = matches[0][1];
+      const candidate = Number(matches[0][2]);
+      if (recorded === statusFileIdentity(path) && Number.isSafeInteger(candidate) && candidate <= size) {
+        offset = candidate;
+      }
+    }
+  } catch {
+    // Missing or unreadable cursor means a whole-file classification.
+  }
+  return Buffer.from(contents).subarray(offset).toString("utf8").split(/\r?\n/).filter((line) => /\S/.test(line));
+}
+
+function spanIsDecisionOwned(
+  statusLines: readonly string[],
+  spanLines: readonly string[],
+  resolveVerb: string,
+  heldVerb: string,
+  reservedPrefixes: readonly string[],
+): boolean {
+  const openKeys = openDecisions(statusLines, resolveVerb, heldVerb, reservedPrefixes);
+  return spanLines.some((line) => {
+    const verb = statusLineVerb(line);
+    const key = explicitDecisionKey(line);
+    return verb === "needs-decision" || verb === "blocked" || verb === resolveVerb || verb === heldVerb ||
+      (key !== null && openKeys.has(key));
+  });
 }
 
 export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = false, attendedHost = false): UnreadWakeScope {
@@ -288,6 +356,7 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
 
   const projects = new Set<string>();
   const metadata = new Map<string, string>();
+  const taskKinds = new Map<string, string>();
   // The task id behind each key a signal or stale row may carry: the task id
   // itself, or the endpoint its metadata records.
   const taskByKey = new Map<string, string>();
@@ -298,6 +367,8 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
       const fields = readFileSync(`${state}/${name}`, "utf8").split(/\r?\n/);
       const project = fields.find((line) => line.startsWith("project="))?.slice(8) ?? "";
       const window = fields.find((line) => line.startsWith("window="))?.slice(7) ?? "";
+      const taskKind = fields.find((line) => line.startsWith("kind="))?.slice(5) ?? "";
+      if (taskKind) taskKinds.set(task, taskKind);
       if (project) {
         metadata.set(task, project);
         taskByKey.set(task, task);
@@ -324,7 +395,13 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
   const reservedPrefixes = (process.env.FM_CLASSIFY_RESERVED_KEY_PREFIXES || "pending-reply-")
     .split(/\s+/)
     .filter(Boolean);
-  const decisionConfig = `${resolveVerb}\0${heldVerb}\0${reservedPrefixes.join("\0")}`;
+  let presentationCursor = "";
+  try {
+    presentationCursor = readFileSync(`${state}/.status-presentation-cursor`, "utf8");
+  } catch {
+    // No cursor means the span classifier conservatively starts at byte zero.
+  }
+  const decisionConfig = `${resolveVerb}\0${heldVerb}\0${reservedPrefixes.join("\0")}\0${presentationCursor}`;
   for (const line of rows) {
     const fields = line.split("\t");
     if (fields.length < 5 || !/^[0-9]+$/.test(fields[1])) return UNSAFE_SCOPE;
@@ -375,9 +452,12 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
       // ordinary main-only row.
       return UNSAFE_SCOPE;
     }
-    // An attended host can have accepted a routine signal before its task
-    // gained a main-owned decision. Pi retains its existing per-row scan.
-    if (task && (kind === "stale" || (attendedHost && kind === "signal"))) {
+    // Stale rows retain their whole-task decision check. Signal rows from a
+    // second mate use only the newly presented status span because that status
+    // file is a shared channel; attended-host crew signals retain the existing
+    // whole-file rule for their single-task logs.
+    if (task && (kind === "stale" || (kind === "signal" &&
+      (taskKinds.get(task) === "secondmate" || attendedHost)))) {
       const statusPath = `${state}/${task}.status`;
       if (!staleDecisionOwnership.has(statusPath)) {
         let version: string | null;
@@ -399,8 +479,18 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
             } catch {
               return UNSAFE_SCOPE;
             }
-            decisionOwned = hasOpenNeedsDecision(statusLines, resolveVerb, heldVerb, reservedPrefixes) ||
-              statusLineVerb(statusLines.at(-1) ?? "") === heldVerb;
+            if (kind === "signal" && taskKinds.get(task) === "secondmate") {
+              decisionOwned = spanIsDecisionOwned(
+                statusLines,
+                statusUnreadSpan(state, task, statusPath, readFileSync(statusPath, "utf8")),
+                resolveVerb,
+                heldVerb,
+                reservedPrefixes,
+              );
+            } else {
+              decisionOwned = hasOpenNeedsDecision(statusLines, resolveVerb, heldVerb, reservedPrefixes) ||
+                statusLineVerb(statusLines.at(-1) ?? "") === heldVerb;
+            }
             staleDecisionCache.set(statusPath, { version, config: decisionConfig, decisionOwned });
             if (staleDecisionCache.size > 512) {
               staleDecisionCache.delete(staleDecisionCache.keys().next().value!);

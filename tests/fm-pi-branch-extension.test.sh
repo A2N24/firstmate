@@ -4276,7 +4276,7 @@ EOF
 # rows vetoing the scan, and the eligible-row snapshot writer names exactly
 # the eligible set.
 test_branch_dispatch_classifies_main_only_rows_and_writes_the_eligible_snapshot() {
-  local repo home out status
+  local repo home out status root_env=$ROOT
   repo="$TMP_ROOT/dispatch-classify-root"
   home="$TMP_ROOT/dispatch-classify-home"
   mkdir -p "$repo/.pi/extensions/lib" "$home/state" "$home/projects/approved"
@@ -4285,11 +4285,12 @@ test_branch_dispatch_classifies_main_only_rows_and_writes_the_eligible_snapshot(
   cp "$ROOT/.pi/extensions/lib/fm-async-exec.ts" "$repo/.pi/extensions/lib/fm-async-exec.ts"
   cp "$ROOT/.pi/extensions/lib/fm-branch-model-picker.ts" "$repo/.pi/extensions/lib/fm-branch-model-picker.ts"
   printf 'project=%s/projects/approved\nwindow=fm-window\n' "$home" > "$home/state/task-a.meta"
-  LIB="$repo/.pi/extensions/lib/fm-branch-dispatch.ts" FM_HOME="$home" GRANT="$ROOT/bin/fm-wake-grant.sh" \
+  LIB="$repo/.pi/extensions/lib/fm-branch-dispatch.ts" FM_HOME="$home" ROOT="$root_env" GRANT="$root_env/bin/fm-wake-grant.sh" \
     node --input-type=module > "$TMP_ROOT/node-output" 2>&1 <<'EOF'
 import { pathToFileURL } from "node:url";
 import { syncBuiltinESMExports } from "node:module";
 import fs, { readFileSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 
 const originalReadFileSync = fs.readFileSync;
 let countedStatusPath = "";
@@ -4304,6 +4305,49 @@ const { activateEligibleRowsOwner, scopeForUnreadWake, writeEligibleRowsSnapshot
   await import(pathToFileURL(process.env.LIB).href);
 const state = `${process.env.FM_HOME}/state`;
 const project = `${process.env.FM_HOME}/projects/approved`;
+const matePath = `${state}/mate.status`;
+writeFileSync(`${state}/mate.meta`, `project=${project}\nwindow=mate-window\nkind=secondmate\n`);
+function setMateStatus(prefix, span) {
+  const contents = prefix + span;
+  writeFileSync(matePath, contents);
+  const identity = execFileSync("bash", ["-c", '. "$1"; _fm_open_decisions_file_ident "$2"', "_", `${process.env.ROOT}/bin/fm-classify-lib.sh`, matePath], {encoding: "utf8"}).trim();
+  const offset = Buffer.byteLength(prefix);
+  writeFileSync(`${state}/.status-presentation-cursor`, `mate\t${identity}\t${offset}\t0\n`);
+}
+const routineLine = "done: merged routine PR\n";
+setMateStatus("needs-decision [key=old-hold]: waiting\n", routineLine);
+writeFileSync(`${state}/.wake-queue`, "1\t1\tsignal\tmate.status\tsignal: mate.status");
+const unrelatedHoldRoutine = scopeForUnreadWake(state, false);
+if (!unrelatedHoldRoutine.eligibleSeqs.includes("1")) {
+  throw new Error(`an unrelated open hold pinned a new routine second-mate line: ${JSON.stringify(unrelatedHoldRoutine)}`);
+}
+const hostUnrelatedHoldRoutine = scopeForUnreadWake(state, false, false, true);
+if (!hostUnrelatedHoldRoutine.eligibleSeqs.includes("1")) {
+  throw new Error(`the attended host pinned a routine second-mate line behind an unrelated hold: ${JSON.stringify(hostUnrelatedHoldRoutine)}`);
+}
+setMateStatus("working: history\n", "working: routine append\nneeds-decision [key=new]: captain choice\n");
+const mixedSpan = scopeForUnreadWake(state, false);
+if (mixedSpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
+  throw new Error(`a mixed routine and decision span was offered to the branch: ${JSON.stringify(mixedSpan)}`);
+}
+setMateStatus("needs-decision [key=same]: waiting\n", "working [key=same]: update\n");
+const sameKeySpan = scopeForUnreadWake(state, false);
+if (sameKeySpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
+  throw new Error(`a same-key update for an open decision was offered to the branch: ${JSON.stringify(sameKeySpan)}`);
+}
+setMateStatus("working: history\n", "blocked: cannot continue\n");
+const keylessBlockedSpan = scopeForUnreadWake(state, false);
+if (keylessBlockedSpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
+  throw new Error(`a key-less blocked span was offered to the branch: ${JSON.stringify(keylessBlockedSpan)}`);
+}
+writeFileSync(`${state}/task-a.meta`, `project=${project}\nwindow=fm-window\nkind=ship\n`);
+writeFileSync(`${state}/task-a.status`, `needs-decision [key=old-hold]: waiting\n${routineLine}`);
+writeFileSync(`${state}/.wake-queue`, "1\t1\tsignal\ttask-a.status\tsignal: task-a.status");
+const crewWholeFileRegression = scopeForUnreadWake(state, false, false, true);
+if (crewWholeFileRegression.eligibleSeqs.includes("1")) {
+  throw new Error(`the attended-host single-task behavior changed with an unrelated open decision: ${JSON.stringify(crewWholeFileRegression)}`);
+}
+writeFileSync(`${state}/task-a.status`, "working: routine work\n");
 
 // Every legitimately main-only class is a check-kind row under a different
 // key; classification never looks at the key, only the kind, so one
