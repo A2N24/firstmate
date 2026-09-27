@@ -114,10 +114,10 @@ A decision-owned event surfaced by `bin/fm-watch.sh`'s signal path gets the same
 - A pending-reply second-mate escalation.
 
 `scopeForUnreadWake` excludes every marked row from what the branch may claim.
-For a `kind=secondmate` signal, it also checks the newly presented status lines against the open decisions in that mate's shared status log: a new decision, blocked line, resolution, captain-held declaration, or line with the declared key of any still-open decision keeps the whole signal on main; an unrelated routine span remains branch-eligible.
+For a `kind=secondmate` signal, it also checks the newly presented status lines against the open decisions in that mate's shared status log: a new decision, blocked line, resolution, captain-held declaration, or line with the declared key of any still-open decision excludes the whole signal row; an unrelated routine span is eligible unless the trigger cross-reference below keeps it on main.
 Only keys in the status parser's declared positions count, not key-shaped prose later in a note.
 The status-presentation cursor bounds that span; an absent or invalid cursor falls back to the whole log, and an unstable status snapshot fails closed.
-Attended-host signals for ordinary single-task crewmates retain the whole-file decision check.
+Stale rows retain the whole-file check; ordinary single-task crewmate signals retain their previous Pi and attended-host rules.
 
 For a stale row, `scopeForUnreadWake` folds the mapped task's status log.
 It excludes the row when any `needs-decision` remains open or the current meaningful declaration is `captain-held`.
