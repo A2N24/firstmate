@@ -1,0 +1,7 @@
+unrelated-hold-routine: eligible=1 status=safe rows=1 tasks=mate 
+mixed: eligible=0 status=unsafe rows= tasks= 
+timestamped-same-key: eligible=0 status=unsafe rows= tasks= 
+new-decision: eligible=0 status=unsafe rows= tasks= 
+keyless-blocked: eligible=0 status=unsafe rows= tasks= 
+prose-key-routine: eligible=1 status=safe rows=1 tasks=mate 
+Second-mate stale wake without new status lines: eligible=1 status=safe rows=1 tasks=mate 
