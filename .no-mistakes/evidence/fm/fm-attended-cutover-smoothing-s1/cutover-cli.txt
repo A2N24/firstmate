@@ -1,0 +1,16 @@
+=== Real outcome store: append captain and routine ===
+1
+2
+=== Presenter output: captain dated, routine undated ===
+{"seq":1,"verdict":"captain","unread":true,"recordedAgo":"0m"}
+{"seq":2,"verdict":"routine","unread":true,"recordedAgo":null}
+=== Host presentation advances read, not processed ===
+{"seq":1,"verdict":"captain","unread":false,"recordedAgo":"0m"}
+=== Pi cutover: processed-init does not adopt unacknowledged read ===
+{"seq":1,"verdict":"captain","recordedAgo":"0m"}
+processed marker absent
+=== Interrupted index rebuild does not adopt ===
+{"seq":1,"verdict":"captain","recordedAgo":"0m"}
+=== Actual acknowledgement closes only captain row ===
+processed marker: 1
+unprocessed empty

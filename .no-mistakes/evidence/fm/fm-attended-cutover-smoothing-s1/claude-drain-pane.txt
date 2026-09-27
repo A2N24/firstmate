@@ -1,0 +1,24 @@
+▝▜██████▀  Opus 4.8 with high effort · Claude Max
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/52b07e9083e7/01M3J2GG5YY007Z7V7PCMJMGJ8
+
+
+! bin/fm-wake-drain.sh
+  ⎿  BRANCH OUTCOMES (captain outcomes the supervision session recorded for you,
+     one line per task, oldest first; each says what was true when it was
+     recorded, so check the task's current state first - process what is still
+     open as firstmate: tell the captain, land or merge what is ready, answer or
+     escalate a decision, or act on a blocker; an outcome the current state
+     shows is already settled, such as a PR since merged or a decision since
+     answered, needs only the acknowledgement, with nothing relayed to the
+     captain):
+     [seq 1, recorded 0m ago] demo: PR ready for review (verify whether merged)
+     BRANCH OUTCOMES: after processing them run bin/fm-branch-outcome.sh
+     mark-processed --through 1; until then every drain presents them again
+
+· Flowing… (14s · still thinking with high effort)
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents
