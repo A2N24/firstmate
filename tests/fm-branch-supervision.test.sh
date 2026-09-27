@@ -65,6 +65,10 @@ test_branch_prompt_is_byte_stable_and_above_cache_floor() {
     *"A worker whose pull request has landed is finished, not stuck"*"\`check: merge landed:\` wake names exactly that moment"*"\`bin/fm-teardown.sh <task>\` with no flags"*"never forced, worked around, or repaired by hand"*) ;;
     *) fail "branch prompt lost the landed-work cleanup rule" ;;
   esac
+  case "$out_a" in
+    *"never authorize retiring the secondmate"*"For a secondmate signal wake"*"new \`wake annotation\` lines only"*"A secondmate stale wake is a liveness event"*"even when it presents no new status lines"*"The main actor alone may retire a secondmate."*) ;;
+    *) fail "branch prompt lost the secondmate signal-span, stale-liveness, or retirement rule" ;;
+  esac
   pass "branch prompt is byte-stable across homes, cwd, timezone, and time, above the cache floor"
 }
 

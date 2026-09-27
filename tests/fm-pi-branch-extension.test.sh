@@ -4325,6 +4325,26 @@ const hostUnrelatedHoldRoutine = scopeForUnreadWake(state, false, false, true);
 if (!hostUnrelatedHoldRoutine.eligibleSeqs.includes("1")) {
   throw new Error(`the attended host pinned a routine second-mate line behind an unrelated hold: ${JSON.stringify(hostUnrelatedHoldRoutine)}`);
 }
+for (const [label, queue, signalSeq, staleSeq] of [
+  ["stale first", "1\t1\tstale\tmate\tstale: mate\n1\t2\tsignal\tmate.status\tsignal: mate.status", "2", "1"],
+  ["signal first", "1\t1\tsignal\tmate.status\tsignal: mate.status\n1\t2\tstale\tmate\tstale: mate", "1", "2"],
+]) {
+  setMateStatus("needs-decision [key=old-hold]: waiting\n", routineLine);
+  writeFileSync(`${state}/.wake-queue`, queue);
+  for (const attended of [false, true]) {
+    const mixedKinds = scopeForUnreadWake(state, false, false, attended);
+    if (!mixedKinds.eligibleSeqs.includes(signalSeq) || mixedKinds.eligibleSeqs.includes(staleSeq)) {
+      throw new Error(`${label}: a stale and a signal row for one second-mate status file shared a verdict: ${JSON.stringify(mixedKinds)}`);
+    }
+  }
+}
+setMateStatus("working: history\n", "");
+writeFileSync(`${state}/.wake-queue`, "1\t1\tstale\tmate\tstale: mate");
+if (scopeForUnreadWake(state, false).eligibleSeqs.join(",") !== "1" ||
+  scopeForUnreadWake(state, false, false, true).eligibleSeqs.join(",") !== "1") {
+  throw new Error("a second-mate stale wake with no new status lines was not offered to the branch");
+}
+writeFileSync(`${state}/.wake-queue`, "1\t1\tsignal\tmate.status\tsignal: mate.status");
 setMateStatus("working: history\n", "working: routine append\nneeds-decision [key=new]: captain choice\n");
 const mixedSpan = scopeForUnreadWake(state, false);
 if (mixedSpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {

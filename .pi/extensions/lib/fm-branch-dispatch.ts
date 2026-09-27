@@ -458,7 +458,8 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
     if (task && (kind === "stale" || (kind === "signal" &&
       (taskKinds.get(task) === "secondmate" || attendedHost)))) {
       const statusPath = `${state}/${task}.status`;
-      if (!staleDecisionOwnership.has(statusPath)) {
+      const ownershipKey = `${kind}\0${statusPath}`;
+      if (!staleDecisionOwnership.has(ownershipKey)) {
         let version: string | null;
         try {
           version = statusFileVersion(statusPath);
@@ -467,7 +468,7 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
         }
         let decisionOwned = false;
         if (version) {
-          const cached = staleDecisionCache.get(statusPath);
+          const cached = staleDecisionCache.get(ownershipKey);
           if (cached?.version === version && cached.config === decisionConfig) {
             decisionOwned = cached.decisionOwned;
           } else {
@@ -490,17 +491,17 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
               decisionOwned = hasOpenNeedsDecision(statusLines, resolveVerb, heldVerb, reservedPrefixes) ||
                 statusLineVerb(statusLines.at(-1) ?? "") === heldVerb;
             }
-            staleDecisionCache.set(statusPath, { version, config: decisionConfig, decisionOwned });
+            staleDecisionCache.set(ownershipKey, { version, config: decisionConfig, decisionOwned });
             if (staleDecisionCache.size > 512) {
               staleDecisionCache.delete(staleDecisionCache.keys().next().value!);
             }
           }
         } else {
-          staleDecisionCache.delete(statusPath);
+          staleDecisionCache.delete(ownershipKey);
         }
-        staleDecisionOwnership.set(statusPath, decisionOwned);
+        staleDecisionOwnership.set(ownershipKey, decisionOwned);
       }
-      if (staleDecisionOwnership.get(statusPath)) {
+      if (staleDecisionOwnership.get(ownershipKey)) {
         needsDecisionKeys.push(key);
         if (!afk) continue;
       }
