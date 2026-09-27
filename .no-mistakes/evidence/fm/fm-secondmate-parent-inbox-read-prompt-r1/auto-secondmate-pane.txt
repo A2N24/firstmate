@@ -1,0 +1,27 @@
+
+m HEAD*?
+❯ export GOTMPDIR=/tmp/fm-mate/gotmp
+
+
+  Read 1 file, listed 1 directory, ran 1 shell command
+
+❯ : Firstmate instruction waiting: list '/Users/kunchen/.no-mistakes/worktrees/
+  52b07e9083e7/01M3J2G6FP26AX56KHZHTBJ4ER/x/p/state/mate.inbox'/*.msg and, in
+  numeric order, read and act on each, then mv each handled file to
+  '/Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3J2G6FP26AX56KHZHTBJ4E
+  R/x/p/state/mate.inbox'/handled/.
+
+  Read 1 file, listed 1 directory, ran 1 shell command
+
+⏺ Done. Read 001.msg from the parent steering inbox with the Read tool — first
+  line: schema=fm-task-inbox.v1. Reported the result with corr=733fa88873a02d91
+  on the parent status channel and moved the message to handled/. No source was
+  edited. Now idle, waiting for further routed work.
+
+✻ Sautéed for 29s · done 12:10 PM
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  Sonnet 5 ctx window                 70.9k / 1.0M
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents

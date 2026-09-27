@@ -1,0 +1,27 @@
+
+n HEAD*?
+❯ export GOTMPDIR=/tmp/fm-mate/gotmp
+
+❯ : Firstmate operational input waiting: read
+  '/Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3J2G6FP26AX56KHZHTBJ4E
+  R/x/n/state/operational-inbox/1790536237-fc4509a67ff56ca4.msg' and handle its
+  contents as Firstmate operational input.
+
+  Read 1 file, listed 1 directory, ran 1 shell command
+
+❯ : Firstmate instruction waiting: list '/Users/kunchen/.no-mistakes/worktrees/
+  52b07e9083e7/01M3J2G6FP26AX56KHZHTBJ4ER/x/q/state/mate.inbox'/*.msg and, in
+  numeric order, read and act on each, then mv each handled file to
+  '/Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3J2G6FP26AX56KHZHTBJ4E
+  R/x/q/state/mate.inbox'/handled/.
+
+  Read 1 file, ran 2 shell commands
+  ⎿  Interrupted · What should Claude do instead?
+
+✻ Crunched for 22s · done 12:11 PM
+                                                               ○ low · /effort
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  Sonnet 5 ctx window                 70.1k / 1.0M
+  ⏵⏵ bypass permissions on (shift+tab to cycle) · ← for agents
