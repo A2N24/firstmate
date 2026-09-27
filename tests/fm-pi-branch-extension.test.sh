@@ -4295,9 +4295,13 @@ import { execFileSync } from "node:child_process";
 const originalReadFileSync = fs.readFileSync;
 let countedStatusPath = "";
 let countedStatusReads = 0;
+let statusReadHook = null;
 fs.readFileSync = function(path, ...args) {
   if (String(path) === countedStatusPath) countedStatusReads += 1;
-  return originalReadFileSync.call(this, path, ...args);
+  if (statusReadHook && String(path) === statusReadHook.path) statusReadHook.before?.();
+  const result = originalReadFileSync.call(this, path, ...args);
+  if (statusReadHook && String(path) === statusReadHook.path) statusReadHook.after?.();
+  return result;
 };
 syncBuiltinESMExports();
 
@@ -4345,6 +4349,21 @@ if (scopeForUnreadWake(state, false).eligibleSeqs.join(",") !== "1" ||
   throw new Error("a second-mate stale wake with no new status lines was not offered to the branch");
 }
 writeFileSync(`${state}/.wake-queue`, "1\t1\tsignal\tmate.status\tsignal: mate.status");
+setMateStatus("needs-decision [key=old-hold]: waiting\n", "done: merged snapshot routine PR\n");
+let mateReads = 0;
+statusReadHook = { path: matePath, before: () => { mateReads += 1; if (mateReads > 1) unlinkSync(matePath); } };
+const removedAfterSnapshot = scopeForUnreadWake(state, false);
+statusReadHook = null;
+if (!removedAfterSnapshot.eligibleSeqs.includes("1")) {
+  throw new Error(`second-mate signal classification did not use its single status snapshot: ${JSON.stringify(removedAfterSnapshot)}`);
+}
+setMateStatus("needs-decision [key=old-hold]: waiting\n", "done: merged changed routine PR\n");
+statusReadHook = { path: matePath, after: () => { statusReadHook = null; fs.appendFileSync(matePath, "needs-decision [key=late]: new\n"); } };
+const changedAfterSnapshot = scopeForUnreadWake(state, false);
+statusReadHook = null;
+if (changedAfterSnapshot.eligibleSeqs.includes("1")) {
+  throw new Error(`a second-mate status file changed during classification was still offered to the branch: ${JSON.stringify(changedAfterSnapshot)}`);
+}
 setMateStatus("working: history\n", "working: routine append\nneeds-decision [key=new]: captain choice\n");
 const mixedSpan = scopeForUnreadWake(state, false);
 if (mixedSpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {

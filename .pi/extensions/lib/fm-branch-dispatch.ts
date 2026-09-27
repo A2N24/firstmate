@@ -472,17 +472,17 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
           if (cached?.version === version && cached.config === decisionConfig) {
             decisionOwned = cached.decisionOwned;
           } else {
-            let statusLines: string[];
+            let contents: string;
             try {
-              statusLines = readFileSync(statusPath, "utf8").split(/\r?\n/).filter((line) => /\S/.test(line));
-              if (statusFileVersion(statusPath) !== version) return UNSAFE_SCOPE;
+              contents = readFileSync(statusPath, "utf8");
             } catch {
               return UNSAFE_SCOPE;
             }
+            const statusLines = contents.split(/\r?\n/).filter((line) => /\S/.test(line));
             if (kind === "signal" && taskKinds.get(task) === "secondmate") {
               decisionOwned = spanIsDecisionOwned(
                 statusLines,
-                statusUnreadSpan(state, task, statusPath, readFileSync(statusPath, "utf8")),
+                statusUnreadSpan(state, task, statusPath, contents),
                 resolveVerb,
                 heldVerb,
                 reservedPrefixes,
@@ -490,6 +490,11 @@ export function scopeForUnreadWake(state: string, heartbeat: boolean, afk = fals
             } else {
               decisionOwned = hasOpenNeedsDecision(statusLines, resolveVerb, heldVerb, reservedPrefixes) ||
                 statusLineVerb(statusLines.at(-1) ?? "") === heldVerb;
+            }
+            try {
+              if (statusFileVersion(statusPath) !== version) return UNSAFE_SCOPE;
+            } catch {
+              return UNSAFE_SCOPE;
             }
             staleDecisionCache.set(ownershipKey, { version, config: decisionConfig, decisionOwned });
             if (staleDecisionCache.size > 512) {
