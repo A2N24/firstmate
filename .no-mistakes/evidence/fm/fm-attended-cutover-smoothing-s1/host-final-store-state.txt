@@ -1,0 +1,6 @@
+HOST after two drains: read cursor
+1
+HOST after acknowledgement: processed marker
+1
+HOST remaining unprocessed count:
+       0

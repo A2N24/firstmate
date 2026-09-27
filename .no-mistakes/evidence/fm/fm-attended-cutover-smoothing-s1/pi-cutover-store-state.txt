@@ -1,0 +1,7 @@
+PHASE 1: malformed age
+{"seq":1,"epoch":1790543993,"task":"cutover-demo","wake":"","verdict":"captain","summary":"PR 123 already merged","silent":false,"statusEndpoint":0,"statusIdent":"-","recordedAgo":"2m"}
+{"seq":2,"epoch":1790543993,"task":"next-demo","wake":"","verdict":"captain","summary":"PR 124 still open","silent":false,"statusEndpoint":0,"statusIdent":"-"}
+processed-marker=absent
+PHASE 2: restored store and Pi acknowledgement
+processed-marker=2
+remaining unprocessed=       0
