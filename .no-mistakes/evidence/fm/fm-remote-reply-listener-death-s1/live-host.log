@@ -1,0 +1,2 @@
+LIVE main-only pass-through; captain received: watcher: started pid=24027 (beacon fresh)
+signal: /private/var/folders/0k/bf8mwt2n5qddzk24r20gfk0c0000gn/T/fm-supervision-host.T1behQ/live-captain/state/demo.status; successor pid=26011 alive; lock=26011; engine calls=0

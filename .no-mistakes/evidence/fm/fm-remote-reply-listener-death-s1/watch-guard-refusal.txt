@@ -1,0 +1,3 @@
+Unmarked-home watcher refusal:
+watcher: FAILED - refusing to arm from a disposable validation checkout: /Users/kunchen/.no-mistakes/worktrees/016d88035d58/01M3JARQNZMGEGFV1C47T6Z2K1/bin
+exit=1

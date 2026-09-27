@@ -1,0 +1,42 @@
+Primary real Claude pane:
+pane_pid=61237 command=2.1.283
+
+Captured primary response:
+
+⏺ Captain, this time the command started monitoring and came back with a wake.
+  It exited with code 0. Output:
+
+  watcher: started pid=41441 (beacon fresh)
+  signal: /var/folders/0k/bf8mwt2n5qddzk24r20gfk0c0000gn/T//fm-lab.z3jzh1/state/
+  demo.status
+
+  The wake came from a status update in the lab home's state/demo.status file.
+  The background run you asked for last time was refused, but this foreground
+  run started with no refusal. Same command, same environment, same copy of the
+  scripts, so something differed between the runs, and I haven't looked into
+  what.
+
+  I left the wake and the monitor it started (pid 41441) alone, and I created no
+  files.
+
+✻ Worked for 18s · done 2:50 PM
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  Opus 5.5 ctx window   ▉               63.7k / 1.0M
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents
+
+Host pass-through record:
+1790545799	start	gen=host-41083-1790545799	primary=claude
+1790545809	pass-through	attended	main-only	signal: /var/folders/0k/bf8mwt2n5qddzk24r20gfk0c0000gn/T//fm-lab.z3jzh1/state/demo.status
+
+Successor watcher after host exited:
+pid=53831
+  PID  PPID COMM
+53831 53800 bash
+alive=yes
+
+Queued main-only wake:
+1790545809	1	signal	demo.status	needs-decision: /var/folders/0k/bf8mwt2n5qddzk24r20gfk0c0000gn/T//fm-lab.z3jzh1/state/demo.status
+1790545809	2	signal	demo.status	needs-decision: /var/folders/0k/bf8mwt2n5qddzk24r20gfk0c0000gn/T//fm-lab.z3jzh1/state/demo.status

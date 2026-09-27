@@ -1,0 +1,5 @@
+registered: remote-reply-ios (remote-reply)
+armed: remote-reply-ios offset=0
+LIVE remote:        3 polls, owner=live, claim pid=24893
+LIVE delta: working [corr=abcdefabcdefabcd]: live lab delta after two empty waits; owner=live claim pid=24893 cursor=offset=70
+LIVE break: runner stopped; classification=continuity-broken; owner=; registration absent; escalation=blocked [key=remote-reply-continuity-ios] [at=1790545021]: remote reply continuity broke for ios (truncated)
