@@ -218,18 +218,17 @@ function statusLineVerb(line: string): string {
   return words.filter((word, index) => index === 0 || !/^corr=[0-9a-f]{16}$/i.test(word)).join(" ");
 }
 
-function decisionKey(line: string): string | null {
+function declaredDecisionKey(line: string): string | undefined {
   const colon = line.indexOf(":");
   const beforeColon = colon < 0 ? line : line.slice(0, colon);
   const beforeMatch = beforeColon.match(/\[key=([^\]]*)\]/);
   const noteMatch = beforeMatch || colon < 0 ? null : line.slice(colon + 1).trimStart().match(/^\[key=([^\]]*)\]/);
-  const key = (beforeMatch ?? noteMatch)?.[1] ?? "default";
-  return /^[A-Za-z0-9._-]+$/.test(key) ? key : null;
+  return (beforeMatch ?? noteMatch)?.[1];
 }
 
-function explicitDecisionKey(line: string): string | null {
-  const match = line.match(/\[key=([A-Za-z0-9._-]+)\]/);
-  return match?.[1] ?? null;
+function decisionKey(line: string): string | null {
+  const key = declaredDecisionKey(line) ?? "default";
+  return /^[A-Za-z0-9._-]+$/.test(key) ? key : null;
 }
 
 function statusLineNote(line: string): string {
@@ -337,7 +336,7 @@ function spanIsDecisionOwned(
   const openKeys = openDecisions(statusLines, resolveVerb, heldVerb, reservedPrefixes);
   return spanLines.some((line) => {
     const verb = statusLineVerb(line);
-    const key = explicitDecisionKey(line);
+    const key = declaredDecisionKey(line) === undefined ? null : decisionKey(line);
     return verb === "needs-decision" || verb === "blocked" || verb === resolveVerb || verb === heldVerb ||
       (key !== null && openKeys.has(key));
   });

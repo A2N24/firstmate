@@ -4335,6 +4335,11 @@ const sameKeySpan = scopeForUnreadWake(state, false);
 if (sameKeySpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
   throw new Error(`a same-key update for an open decision was offered to the branch: ${JSON.stringify(sameKeySpan)}`);
 }
+setMateStatus("needs-decision [key=hold]: waiting\n", "done: merged work mentioning [key=hold]\n");
+const proseKeySpan = scopeForUnreadWake(state, false);
+if (!proseKeySpan.eligibleSeqs.includes("1") || !scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
+  throw new Error(`a routine note that only mentions an open key in prose was pinned to main: ${JSON.stringify(proseKeySpan)}`);
+}
 setMateStatus("working: history\n", "blocked: cannot continue\n");
 const keylessBlockedSpan = scopeForUnreadWake(state, false);
 if (keylessBlockedSpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
