@@ -4374,6 +4374,16 @@ const sameKeySpan = scopeForUnreadWake(state, false);
 if (sameKeySpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
   throw new Error(`a same-key update for an open decision was offered to the branch: ${JSON.stringify(sameKeySpan)}`);
 }
+setMateStatus("needs-decision [key=hold]: waiting\n", "working [at=10:30] [key=hold]: update\n");
+const stampedSameKeySpan = scopeForUnreadWake(state, false);
+if (stampedSameKeySpan.eligibleSeqs.includes("1") || scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
+  throw new Error(`a timestamped same-key update for an open decision was offered to the branch: ${JSON.stringify(stampedSameKeySpan)}`);
+}
+setMateStatus("needs-decision [at=10:00] [key=hold]: waiting\n", "done: merged routine PR\n");
+const stampedHoldRoutine = scopeForUnreadWake(state, false);
+if (!stampedHoldRoutine.eligibleSeqs.includes("1") || !scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {
+  throw new Error(`an unrelated timestamped open hold pinned a new routine second-mate line: ${JSON.stringify(stampedHoldRoutine)}`);
+}
 setMateStatus("needs-decision [key=hold]: waiting\n", "done: merged work mentioning [key=hold]\n");
 const proseKeySpan = scopeForUnreadWake(state, false);
 if (!proseKeySpan.eligibleSeqs.includes("1") || !scopeForUnreadWake(state, false, false, true).eligibleSeqs.includes("1")) {

@@ -218,7 +218,23 @@ function statusLineVerb(line: string): string {
   return words.filter((word, index) => index === 0 || !/^corr=[0-9a-f]{16}$/i.test(word)).join(" ");
 }
 
-function declaredDecisionKey(line: string): string | undefined {
+function statusLineUnstamped(line: string): string {
+  let rest = line;
+  let keep = "";
+  for (;;) {
+    const start = rest.indexOf("[at=");
+    const end = start < 0 ? -1 : rest.indexOf("]", start + 4);
+    if (end < 0) break;
+    const before = rest.slice(0, start);
+    if (before.includes(":")) break;
+    keep += before.endsWith(" ") ? before.slice(0, -1) : before;
+    rest = rest.slice(end + 1);
+  }
+  return keep + rest;
+}
+
+function declaredDecisionKey(rawLine: string): string | undefined {
+  const line = statusLineUnstamped(rawLine);
   const colon = line.indexOf(":");
   const beforeColon = colon < 0 ? line : line.slice(0, colon);
   const beforeMatch = beforeColon.match(/\[key=([^\]]*)\]/);
@@ -231,7 +247,8 @@ function decisionKey(line: string): string | null {
   return /^[A-Za-z0-9._-]+$/.test(key) ? key : null;
 }
 
-function statusLineNote(line: string): string {
+function statusLineNote(rawLine: string): string {
+  const line = statusLineUnstamped(rawLine);
   const colon = line.indexOf(":");
   if (colon < 0) return line;
   const note = line.slice(colon + 1).trimStart();
