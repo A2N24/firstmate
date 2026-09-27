@@ -1,0 +1,2 @@
+before: total=250 over 5s (50.0 exec/s), sleep=20, chmod=105, mktemp=21, stat=0, tail=0
+after: total=12 over 5s (2.4 exec/s), sleep=0, chmod=4, mktemp=4, stat=0, tail=0
