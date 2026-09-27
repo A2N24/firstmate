@@ -1,0 +1,27 @@
+=== failed quiet start, opted-in Claude host (mirror missing) ===
+Away posture recorded at 2026-09-27T19:23:03Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
+Away posture (recorded):
+  entered: 2026-09-27T19:23:03Z
+  expected return: not given
+  spend cap: 4 concurrent workers
+  reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
+  your words (verbatim):
+    stay quiet
+fm-afk-launch: the away daemon is no longer launched on pi; the away-posture record is the posture there (run bin/fm-afk-launch.sh enter and stop)
+fm-afk-launch: the quiet daemon did not start; ending quiet mode so its record does not outlive it
+fm-afk-launch: away-posture record archived at /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3J2HGSCK86HJ45THH1F3RKT/.fm-test-lab-53492/state/afk-contracts/1790536983.afk-contract
+fm-afk-launch: away mode stopped; no daemon terminal was running, .afk cleared, and the posture record archived
+start exit=1
+live record=no flag=no archive=2
+=== failed away start without host opt-in ===
+Away posture recorded at 2026-09-27T19:23:03Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
+Away posture (recorded):
+  entered: 2026-09-27T19:23:03Z
+  expected return: not given
+  spend cap: 4 concurrent workers
+  reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
+  your words (verbatim):
+    back after lunch
+fm-afk-launch: the away daemon is no longer launched on pi; the away-posture record is the posture there (run bin/fm-afk-launch.sh enter and stop)
+start exit=1
+live record=yes flag=no

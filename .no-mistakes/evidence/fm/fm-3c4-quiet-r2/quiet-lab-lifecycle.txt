@@ -1,0 +1,56 @@
+primary harness=claude
+=== bin/fm-afk-launch.sh quiet-check ===
+Quiet mode needs nothing on this home: the ordinary supervision session already handles the wakes it can while the captain is present, never opens a turn here for a routine outcome, and hands this conversation only what needs it; no daemon and no away record are used.
+exit=0
+=== env FM_AFK_MODE=quiet bin/fm-afk-launch.sh enter --words keep routine wakes off my main ===
+fm-afk-launch: quiet mode writes no away-posture record on this home, whose attended supervision host already is quiet mode; run bin/fm-afk-launch.sh quiet-check
+exit=3
+after ready quiet: record=no flag=no
+=== bin/fm-afk-launch.sh quiet-check ===
+Quiet mode is not already the ordinary posture on this home, because the dialog mirror is missing or could not be read, so every attended wake reaches this conversation; quiet mode enters through the quiet daemon instead.
+exit=1
+=== env FM_AFK_MODE=quiet bin/fm-afk-launch.sh enter --words quiet fallback ===
+Away posture recorded at 2026-09-27T18:51:43Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
+Away posture (recorded):
+  entered: 2026-09-27T18:51:43Z
+  expected return: not given
+  spend cap: 4 concurrent workers
+  reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
+  your words (verbatim):
+    quiet fallback
+exit=0
+fallback mode=quiet
+=== env FM_SUPERVISOR_TARGET=unused FM_SUPERVISOR_BACKEND=unsupported bin/fm-afk-launch.sh start ===
+fm-afk-launch: no non-visible daemon-launch primitive for backend 'unsupported' yet (supported: herdr, tmux)
+fm-afk-launch: the quiet daemon did not start; ending quiet mode so its record does not outlive it
+fm-afk-launch: away-posture record archived at /var/folders/5x/4nqprlbx0518k3ybcb1sz6gr0000gn/T//fm-lab.yxnFap/state/afk-contracts/1790535103.afk-contract
+fm-afk-launch: away mode stopped; no daemon terminal was running, .afk cleared, and the posture record archived
+exit=1
+after failed quiet: record=no flag=no archived=1
+=== bin/fm-afk-launch.sh quiet-check ===
+Quiet mode needs nothing on this home: the ordinary supervision session already handles the wakes it can while the captain is present, never opens a turn here for a routine outcome, and hands this conversation only what needs it; no daemon and no away record are used.
+exit=0
+=== bin/fm-afk-launch.sh enter --words away first ===
+Away posture recorded at 2026-09-27T18:51:44Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
+Away posture (recorded):
+  entered: 2026-09-27T18:51:44Z
+  expected return: not given
+  spend cap: 4 concurrent workers
+  reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
+  your words (verbatim):
+    away first
+exit=0
+=== bin/fm-afk-launch.sh quiet-check ===
+Quiet mode starts nothing on this home while its away record (state/.afk-contract) is live: the captain has returned, so run the /afk return (bin/fm-afk-return.sh), pass its catch-up gate, then run quiet-check again.
+exit=2
+=== env FM_AFK_MODE=quiet bin/fm-afk-launch.sh enter --words try to replace away ===
+fm-afk-launch: quiet mode refuses while this home's away record (state/.afk-contract) is live; run the /afk return (bin/fm-afk-return.sh) and pass its catch-up gate, then run bin/fm-afk-launch.sh quiet-check
+exit=3
+away preserved: mode= record=yes
+=== bin/fm-afk-launch.sh stop ===
+fm-afk-launch: away-posture record archived at /var/folders/5x/4nqprlbx0518k3ybcb1sz6gr0000gn/T//fm-lab.yxnFap/state/afk-contracts/1790535104.afk-contract
+fm-afk-launch: away mode stopped; no daemon terminal was running, .afk cleared, and the posture record archived
+exit=0
+=== bin/fm-afk-launch.sh quiet-check ===
+Quiet mode needs nothing on this home: the ordinary supervision session already handles the wakes it can while the captain is present, never opens a turn here for a routine outcome, and hands this conversation only what needs it; no daemon and no away record are used.
+exit=0

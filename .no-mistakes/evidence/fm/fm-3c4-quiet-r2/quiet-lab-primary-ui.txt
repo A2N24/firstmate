@@ -1,0 +1,24 @@
+
+ ▐▛███▛█   Claude Code v2.1.283
+▝▜██████▀  Opus 4.8 with high effort · Claude Max
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/52b07e9083e7/01M3J2HGSCK86HJ45THH1F3RKT
+
+
+!  bash
+  /var/folders/5x/4nqprlbx0518k3ybcb1sz6gr0000gn/T//fm-lab.yxnFap/drive.sh >
+  /var/folders/5x/4nqprlbx0518k3ybcb1sz6gr0000gn/T//fm-lab.yxnFap/result.log
+  2>&1
+  ⎿  (Bash completed with no output)
+
+
+
+
+
+
+✽ Actualizing…
+  You've used 86% of your weekly limit · resets Sep 29 at 2pm (America/Los_An…
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents

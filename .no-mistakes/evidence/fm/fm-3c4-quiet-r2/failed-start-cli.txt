@@ -1,0 +1,31 @@
+QUIET ENTER
+Away posture recorded at 2026-09-27T19:14:03Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
+Away posture (recorded):
+  entered: 2026-09-27T19:14:03Z
+  expected return: not given
+  spend cap: 4 concurrent workers
+  reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
+  your words (verbatim):
+    quiet lab
+enter=0
+QUIET FAILED START
+fm-afk-launch: no non-visible daemon-launch primitive for backend 'unsupported' yet (supported: herdr, tmux)
+fm-afk-launch: the quiet daemon did not start; ending quiet mode so its record does not outlive it
+fm-afk-launch: away-posture record archived at /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3J2HGSCK86HJ45THH1F3RKT/.fm-live.f2Y2fH/failure/state/afk-contracts/1790536443.afk-contract
+fm-afk-launch: away mode stopped; no daemon terminal was running, .afk cleared, and the posture record archived
+start=1
+afk-contracts
+AWAY ENTER AND FAILED START
+Away posture recorded at 2026-09-27T19:14:03Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
+Away posture (recorded):
+  entered: 2026-09-27T19:14:03Z
+  expected return: not given
+  spend cap: 4 concurrent workers
+  reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
+  your words (verbatim):
+    away lab
+enter=0
+fm-afk-launch: no non-visible daemon-launch primitive for backend 'unsupported' yet (supported: herdr, tmux)
+start=1
+.afk-contract
+afk-contracts

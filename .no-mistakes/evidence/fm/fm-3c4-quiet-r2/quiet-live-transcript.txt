@@ -1,0 +1,51 @@
+seq=3 captain: /quiet
+seq=4 main: Captain, no need to enter quiet mode here - supervision on this home already works that way. Routine fleet events stay off this conversation on their own, while decisions, failures, credential needs, and review-ready work still reach you every time. Nothing to switch on and nothing to turn off later; you'll only hear from me when something actually needs your call.
+seq=10 captain: Captain request: /quiet. This is a disposable lab with a live second mate. Follow the quiet skill, checking readiness in the lab FM_HOME only; report the result concisely. Do not touch the real fleet.
+seq=11 main: Captain, quiet mode readiness checked against the lab home only - the real fleet was not touched. Result: exit 0, quiet mode needs nothing here. The lab's attended supervision (host = claude) already keeps routine fleet events, including the live second mate's ordinary updates, off this conversation, and surfaces only decisions, failures, credential needs, and review-ready work. So no away/quiet record was written, no daemon was armed, and `/quiet off` would be a no-op too. Nothing to enter, nothing to undo.
+seq=37 captain: /quiet
+seq=38 main: Captain, quiet mode is active in the lab home. The readiness check flipped to needing the daemon this time (the attended host's dialog mirror couldn't be read, so wakes were reaching this conversation), so I entered through the quiet daemon rather than relying on the host. Verified up: the quiet record is written with mode `quiet`, and the supervision daemon is running healthy in the background. Everything stayed scoped to the lab home; the real fleet was not touched.
+
+From here I'll batch routine updates below deck and surface only decisions, failures, credential needs, or review-ready work. Ordinary chat will not exit this - say `/quiet off` when you want normal per-wake responses back.
+seq=39 captain: /quiet off
+seq=40 main: Captain, quiet mode is off - back to normal per-wake responses, all in the lab home; the real fleet was untouched throughout.
+
+The wrap-up from the quiet window:
+- Supervision ran the whole time with no gap; nothing is waiting on you, nothing failed for good, and there's no cleanup due.
+- One event worth flagging: the lab second mate briefly dropped and was auto-recovered. A follow-up recovery attempt did fail - its home couldn't resolve the project's main-branch commit to sync against - but the mate is live and reporting healthy again now, so no action is needed. That sync-resolution hiccup is the one thing that could recur if the mate drops again; flagging it so you're aware, not because it's blocking anything.
+seq=53 captain: /quiet
+seq=54 main: Captain, this time the check comes back clean (exit 0) - the attended supervision here is healthy again, so quiet mode needs nothing. It's already keeping routine fleet events off this conversation on its own and surfacing only decisions, failures, credential needs, or review-ready work. So nothing was entered, no daemon armed, and there's nothing to turn off later. All checked in the lab home; the real fleet was not touched.
+POSTURE AFTER /quiet off:
+.afk: absent
+.afk-contract: absent
+.afk-daemon-terminal: absent
+archived contracts: 1
+DAEMON OBSERVATIONS:
+[2026-09-27T12:11:57-0700] daemon starting (pid 68911); target=%0; target_source=TMUX_PANE; backend=tmux; backend_source=TMUX_PANE; afk=on; inject_skip='heartbeat'; stale_escalate=240s; batch=90s
+[2026-09-27T12:12:34-0700] self-handle: signal: /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3J2HGSCK86HJ45THH1F3RKT/.fm-live.f2Y2fH/p/state/mate.status -> routine signal: mate.status: working [at=1790536322]: routine validation ping from live second mate
+[2026-09-27T12:12:51-0700] daemon shutting down
+MATE PANE:
+❯ : Firstmate operational input waiting: read
+  '/Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3J2HGSCK86HJ45THH1F3RK
+  T/.fm-live.f2Y2fH/m/state/operational-inbox/1790535808-bef622c492c0a95b.msg'
+  and handle its contents as Firstmate operational input.
+
+  Read 2 files, listed 1 directory, ran 1 shell command
+
+⏺ Both duplicate messages are the same secondmate launch brief, no work routed
+  yet. Session-start already ran (shown in the earlier digest) with no work
+  under way, empty backlog, no in-flight crewmates. Per this brief's definition
+  of done, that reconciliation is complete — this home has nothing assigned, so
+  the correct action is to go idle and wait silently for routed work, not to
+  append anything to the parent status file (no material phase change to
+  report).
+
+  I'll wait for the main firstmate to route work to this second mate.
+
+✻ Cooked for 20s · done 12:05 PM
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  Sonnet 5 ctx window  ▎              92.6k / 1.0M
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents
+
