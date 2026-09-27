@@ -1,0 +1,24 @@
+  WARNING: watcher still down (same stale episode; last beat: never, grace 300s)
+  - full banner already printed this episode.
+
+  Plain read:
+
+  1. The message was delivered to labmate's steering inbox as a fire-and-forget
+     record under id a1b2c3d4e5f60718. No validation error this time, and the
+     command succeeded.
+  2. The two lines are both non-fatal: the same lab-scoping gate-refuse, and an
+     abbreviated repeat of the watcher-down warning (the full banner already
+     printed on the previous send).
+
+  As instructed, I did not start a watcher. That means nothing is monitoring
+  labmate, so its reply won't wake me automatically - when you want to see
+  whether it read the inbox message and returned ORANGE_KITE_517, tell me and
+  I'll check its state directly.
+
+✻ Sautéed for 15s · done 1:49 AM
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  Opus 4.8 ctx window  ▏              79.0k / 1.0M
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents

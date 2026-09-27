@@ -1,0 +1,24 @@
+  charter: confirming I can Read a parent-home steering inbox message (an
+  outside/additional working directory) without a permission prompt. I read it
+  successfully with no prompt - the unique phrase is ORANGE_KITE_517.
+
+  I must return the answer through the parent channel with the correlation token
+  (a chat-only reply is lost), then acknowledge the message by moving it. Let
+  me reply and acknowledge.
+
+  Ran 1 shell command
+
+⏺ Now I'll acknowledge the handled message by moving it to the handled
+  directory.
+
+  Ran 1 shell command
+
+⏺ Handled the marked request from the main firstmate:
+
+  - Read the parent-home steering inbox message with the Read file tool - it
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  Opus 4.8 ctx window                 67.7k / 1.0M
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents

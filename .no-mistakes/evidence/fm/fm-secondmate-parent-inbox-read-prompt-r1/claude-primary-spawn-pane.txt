@@ -1,0 +1,24 @@
+
+  fm-gate-refuse: gate agent lifecycle permitted only against lab home
+  /var/folders/5x/4nqprlbx0518k3ybcb1sz6gr0000gn/T//fm-lab.R7Uc8c
+  spawned labscout harness=claude kind=scout window=primary:fm-labscout
+  worktree=/Users/kunchen/.treehouse/demo-09cf56/1/demo
+
+  Two lines came back:
+  - A fm-gate-refuse line stating gate agent lifecycle is only permitted against
+    the lab home at /var/folders/.../fm-lab.R7Uc8c.
+  - A spawned confirmation: labscout, harness claude, kind scout, window
+    primary:fm-labscout, worktree /Users/kunchen/.treehouse/demo-09cf56/1/demo.
+
+  I made no changes to the project. Note that despite the refusal line, the
+  process exited 0 and reported the scout as spawned into its own worktree - if
+  you want, captain, I can look into why the gate-refuse line and a successful
+  spawn both appear.
+
+✻ Baked for 49s · done 1:41 AM
+
+────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  Opus 4.8 ctx window   ▉               61.5k / 1.0M
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents
