@@ -1,0 +1,44 @@
+=== claude primary, lab path length 180, private socket /tmp/fml.btJhAn ===
+Socket directory mode 700, owner 501
+primary: 1 windows (created Sun Sep 27 02:17:58 2026)
+
+ ▐▛███▛█   Claude Code v2.1.283
+▝▜██████▀  Opus 4.8 with high effort · Claude Max
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/52b07e9083e7/01M3H23AMDAZZ94P3QZ1VHVAA9
+
+
+
+
+
+
+
+
+
+
+
+
+fm-lab-home: refusing teardown: cannot confirm the lab tmux server has stopped
+PASS: active server teardown refused
+PASS: private socket directory removed after server stopped
+=== pi primary, lab path length 180, private socket /tmp/fml.qravSm ===
+Socket directory mode 700, owner 501
+primary: 1 windows (created Sun Sep 27 02:18:03 2026)
+────────────────────────────────────────────────────────────────────────────────
+
+ Trust project folder?
+ /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3H23AMDAZZ94P3QZ1VHVAA9
+
+ This allows pi to load .pi settings and resources, install missing project
+ packages, and execute project extensions.
+
+ → Trust
+   Trust parent folder (/Users/kunchen/.no-mistakes/worktrees/52b07e9083e7)
+   Trust (this session only)
+   Do not trust
+   Do not trust (this session only)
+
+ ↑↓ navigate  enter select  escape/ctrl+c cancel
+
+fm-lab-home: refusing teardown: cannot confirm the lab tmux server has stopped
+PASS: active server teardown refused
+PASS: private socket directory removed after server stopped

@@ -1,0 +1,27 @@
+Pi primary, deep lab path length 180, short socket /tmp/fml.t7XLgz:
+primary: 1 windows (created Sun Sep 27 02:18:20 2026)
+
+────────────────────────────────────────────────────────────────────────────────
+ Update Available
+ New version 0.87.1 is available. Run pi update
+ Changelog: https://pi.dev/changelog
+────────────────────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────────────────────
+ Package Updates Available
+ Package updates are available. Run pi update --extensions
+ Packages:
+ - pi-web-access
+ - @ryan_nookpi/pi-extension-codex-fast-mode
+ - compact-adviser
+────────────────────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────────────────────
+~/.no-mistakes/worktrees/52b07e9083e7/01M3H23AMDAZZ94P3QZ1VHVAA9 (detached)
+$0.000 (sub) 0.0%/500k (auto)                              (xai) grok-4.5 • high
+
+
+
+Socket directory removed
