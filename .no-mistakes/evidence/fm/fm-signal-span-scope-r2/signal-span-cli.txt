@@ -1,0 +1,78 @@
+CASE unrelated hold, routine merged -> branch
+eligible=1
+status=safe
+corrupted=0
+rows=1
+tasks=mate
+unscoped=0
+CASE mixed routine and decision -> main
+eligible=0
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+CASE same-key update -> main
+eligible=0
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+CASE new decision -> main
+eligible=0
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+CASE keyless blocked -> main
+eligible=0
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+CASE keyless resolved unrelated -> branch
+eligible=1
+status=safe
+corrupted=0
+rows=1
+tasks=mate
+unscoped=0
+CASE keyed resolved open -> main
+eligible=0
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+CASE keyed resolved never open -> branch
+eligible=1
+status=safe
+corrupted=0
+rows=1
+tasks=mate
+unscoped=0
+CASE bare resolved does not close -> main
+eligible=0
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+CASE single-task attended hold -> main
+eligible=0
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+All CLI offers matched expected decisions.
+CASE missing presentation cursor, conservative whole-log -> main
+eligible=0
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0

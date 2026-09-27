@@ -1,0 +1,66 @@
+unrelated hold + merged done: branch (expected branch)
+status=safe
+corrupted=0
+rows=1
+tasks=mate
+unscoped=0
+mixed routine and new decision: main (expected main)
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+same-key stamped update: main (expected main)
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+keyless blocked: main (expected main)
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+new decision: main (expected main)
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+keyless resolved unrelated: branch (expected branch)
+status=safe
+corrupted=0
+rows=1
+tasks=mate
+unscoped=0
+keyed resolved open: main (expected main)
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+keyed resolved never open: branch (expected branch)
+status=safe
+corrupted=0
+rows=1
+tasks=mate
+unscoped=0
+bare resolved did not close unkeyed: main (expected main)
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
+single-task crewmate unchanged: branch (expected branch)
+status=safe
+corrupted=0
+rows=1
+tasks=crew
+unscoped=0
+missing cursor fallback: main
+status=unsafe
+corrupted=0
+rows=
+tasks=
+unscoped=0
