@@ -1,0 +1,52 @@
+
+=== trip ===
+Supervisor health:
+  - GAP: the away daemon was not running at return (the away flag stood with no live daemon)
+  (nothing)
+Tried and failed, or could not be fixed:
+  - the supervision session latched at 2026-09-28T19:05:07Z after 2 consecutive engine errors and paused away supervision (at least 2 engine error(s) in the window, last cooldown 300s); still paused at return: every wake reaches main until 2026-09-28T19:10:07Z, then one wake probes the engine again
+  (nothing)
+fm-afk-return: catch-up clear; ordinary captain work may proceed
+gate=clear
+
+=== probe-before ===
+Supervisor health:
+  - GAP: the away daemon was not running at return (the away flag stood with no live daemon)
+  (nothing)
+Tried and failed, or could not be fixed:
+  - the supervision session latched after engine errors and paused away supervision (trip time unavailable, at least 0 engine error(s) in the window); still paused at return: every wake reaches main until 2026-09-28T19:15:08Z, then one wake probes the engine again
+  (nothing)
+fm-afk-return: catch-up clear; ordinary captain work may proceed
+gate=clear
+
+=== missing-log ===
+Supervisor health:
+  - GAP: the away daemon was not running at return (the away flag stood with no live daemon)
+  (nothing)
+Tried and failed, or could not be fixed:
+  - the supervision session latched after engine errors and paused away supervision (trip time unavailable, at least 0 engine error(s) in the window); still paused at return: every wake reaches main until 2026-09-28T19:10:10Z, then one wake probes the engine again
+  (nothing)
+fm-afk-return: catch-up clear; ordinary captain work may proceed
+gate=clear
+
+=== handling ===
+Supervisor health:
+  - GAP: the away daemon was not running at return (the away flag stood with no live daemon)
+  - a wake was being handled at return (recovery marker pending:handling); not a gap
+  (nothing)
+Tried and failed, or could not be fixed:
+  (nothing)
+  (nothing)
+fm-afk-return: catch-up clear; ordinary captain work may proceed
+gate=clear
+
+=== downtime ===
+Supervisor health:
+  - GAP: watcher downtime was detected during the away window (recovery marker present)
+  - GAP: the away daemon was not running at return (the away flag stood with no live daemon)
+  (nothing)
+Tried and failed, or could not be fixed:
+  (nothing)
+  (nothing)
+fm-afk-return: catch-up clear; ordinary captain work may proceed
+gate=clear

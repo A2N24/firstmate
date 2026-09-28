@@ -1,0 +1,11 @@
+
+=== handling return ===
+Supervisor health:
+  - supervision ran through the away window with no detected gap (watcher beat 0s old at return)
+  - a wake was being handled at return (recovery marker pending:handling); not a gap
+fm-afk-return: catch-up clear; ordinary captain work may proceed
+
+=== downtime return ===
+Supervisor health:
+  - GAP: watcher downtime was detected during the away window (recovery marker present)
+fm-afk-return: catch-up clear; ordinary captain work may proceed
