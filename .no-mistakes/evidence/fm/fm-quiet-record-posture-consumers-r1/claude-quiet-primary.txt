@@ -1,0 +1,24 @@
+▝▜██████▀  Opus 4.8 with high effort · Claude Max
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/52b07e9083e7/01M3MW8BQEWDKY717DXWQX5QCF
+
+
+❯ In this lab home only, run FM_AFK_MODE=quiet bin/fm-afk-contract.sh enter
+  --words "quiet but present" and then bin/fm-afk-contract.sh mode; report the
+  mode.
+
+  Ran 2 shell commands
+
+⏺ Captain, done. The mode reads back quiet.
+
+  Both commands ran in this lab home: the enter recorded quiet mode at
+  2026-09-28T22:33:30Z with your words "quiet but present" verbatim, holding
+  nothing since you're present, and mode confirms quiet. Only an explicit /quiet
+  off ends it.
+
+✻ Sautéed for 15s · done 3:33 PM
+
+────────────────────────────────────────────────────────────────────────────────
+❯ now run /quiet off
+────────────────────────────────────────────────────────────────────────────────
+  Opus 4.8 ctx window   ▉               60.2k / 1.0M
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents

@@ -1,39 +1,19 @@
-QUIET ENTRY
-Quiet mode recorded at 2026-09-28T21:07:19Z: you are present, so nothing waits for your return: every action you ask for, a local landing or a merge included, proceeds now under ordinary attended authority, and quiet mode changes only which updates reach this conversation. Only an explicit /quiet off ends it.
+Quiet mode recorded at 2026-09-28T22:12:25Z: you are present, so nothing waits for your return: every action you ask for, a local landing or a merge included, proceeds now under ordinary attended authority, and quiet mode changes only which updates reach this conversation. Only an explicit /quiet off ends it.
 Quiet mode (recorded):
-  entered: 2026-09-28T21:07:19Z
+  entered: 2026-09-28T22:12:25Z
   holds: none - you are present, so nothing waits for your return: every action you ask for, a local landing or a merge included, proceeds now under ordinary attended authority, and quiet mode changes only which updates reach this conversation.
   your words (verbatim):
-    routine updates only
-QUIET MODE
-quiet
-QUIET READBACK
-Quiet mode (recorded):
-  entered: 2026-09-28T21:07:19Z
-  holds: none - you are present, so nothing waits for your return: every action you ask for, a local landing or a merge included, proceeds now under ordinary attended authority, and quiet mode changes only which updates reach this conversation.
-  your words (verbatim):
-    routine updates only
-AWAY ENTRY
-fm-afk-contract: quiet mode became the away posture; the quiet record is archived at /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3MW8BQEWDKY717DXWQX5QCF/.quiet-live.zXX1sw/state/afk-contracts/1790629639-superseded-1790629639.afk-contract
-Away posture recorded at 2026-09-28T21:07:19Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
+    present and observing
+quiet mode: quiet
+away-present quiet exit: 1
+/Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3MW8BQEWDKY717DXWQX5QCF/.fm-test.kRRljA/state/afk-contracts/1790633545.afk-contract
+Away posture recorded at 2026-09-28T22:12:25Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
 Away posture (recorded):
-  entered: 2026-09-28T21:07:19Z
+  entered: 2026-09-28T22:12:25Z
   expected return: not given
   spend cap: 4 concurrent workers
   reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
   your words (verbatim):
-    hold decisions
-AWAY MODE
-away
-ADVERSARIAL QUIET OVER AWAY
-fm-afk-contract: replaced the earlier away posture; its record is archived at /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3MW8BQEWDKY717DXWQX5QCF/.quiet-live.zXX1sw/state/afk-contracts/1790629639-superseded-1790629639-5021.afk-contract
-Away posture recorded at 2026-09-28T21:07:19Z: hold-for-return only. No phone channel is configured; anything that needs you waits for your return. Your away instructions are recorded verbatim; the away session will carry them out where it can, and anything it is unsure of, or that needs you, waits for your return. Destructive, irreversible, and security-sensitive actions are never pre-authorizable, whatever the words say. Expected return: not given. Spend cap: 4 concurrent workers.
-Away posture (recorded):
-  entered: 2026-09-28T21:07:19Z
-  expected return: not given
-  spend cap: 4 concurrent workers
-  reach: hold-for-return only. No phone channel is configured; anything that needs you waits for your return.
-  your words (verbatim):
-    quiet please
-MODE AFTER ATTEMPT
-away
+    return later
+away mode: away
+away-present away exit: 0
