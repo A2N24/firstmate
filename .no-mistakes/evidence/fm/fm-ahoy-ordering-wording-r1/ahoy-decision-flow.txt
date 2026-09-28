@@ -1,0 +1,11 @@
+CAPTAIN: For our practice conversation, raise two explicit decisions requiring my answer: ship today vs hold for security audit (high stakes), and blue vs green badge (minor). Do not call tools; neither is resolved.
+CAPTAIN: Thanks. This is an unrelated message; I have not resolved either decision.
+CAPTAIN: /skill:ahoy
+FIRST MATE:
+Since your last message, no other conversation events occurred. Both decisions remain open: **ship today vs hold for a security audit**, and **blue vs green badge**.
+
+My pick to address first is **ship today vs hold for a security audit**. This has higher stakes because shipping could expose an unreviewed security issue. **I recommend holding for the audit.** Do you want to ship today or hold?
+
+CAPTAIN: Hold for the audit.
+FIRST MATE:
+We’ll hold for the security audit. Next, my pick is the remaining decision: **blue or green badge**. It’s a minor visual choice; without other design constraints, I recommend **blue**. Which do you prefer?

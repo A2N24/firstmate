@@ -1,0 +1,3 @@
+Captain, since your last message, the session-start check completed; it reported no work under way and no queued wakes. Your two decisions remain unanswered.
+
+**My pick to address first: ship today or hold for a security audit.** This has the greater impact because shipping could expose an issue the audit might catch. I recommend **holding for the audit** unless there’s a compelling reason to ship today. Which do you choose?
