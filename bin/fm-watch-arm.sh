@@ -78,6 +78,9 @@
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=bin/fm-home-drift-lib.sh
+. "$SCRIPT_DIR/fm-home-drift-lib.sh"
+fm_home_drift_warn
 # shellcheck source=bin/fm-gate-refuse-lib.sh
 . "$SCRIPT_DIR/fm-gate-refuse-lib.sh"
 if [ "${FM_GATE_REFUSE_BYPASS:-}" != 1 ]; then

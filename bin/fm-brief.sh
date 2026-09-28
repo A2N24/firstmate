@@ -168,6 +168,9 @@ resolve_directory_input() {
 
 FM_ROOT="${FM_ROOT_OVERRIDE:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 FM_HOME=$(resolve_directory_input FM_HOME "${FM_HOME:-${FM_ROOT_OVERRIDE:-$FM_ROOT}}") || exit 1
+# shellcheck source=bin/fm-home-drift-lib.sh
+. "$SCRIPT_DIR/fm-home-drift-lib.sh"
+fm_home_drift_warn
 if [ -n "${FM_DATA_OVERRIDE:-}" ]; then
   DATA=$(resolve_directory_input FM_DATA_OVERRIDE "$FM_DATA_OVERRIDE") || exit 1
 else

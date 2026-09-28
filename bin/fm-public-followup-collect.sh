@@ -44,6 +44,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/fm-public-followup-lib.sh"
 
 FM_HOME="${FM_HOME:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+# shellcheck source=bin/fm-home-drift-lib.sh
+. "$SCRIPT_DIR/fm-home-drift-lib.sh"
+fm_home_drift_warn
 STATE="${FM_STATE_OVERRIDE:-$FM_HOME/state}"
 
 usage() {

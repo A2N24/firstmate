@@ -33,6 +33,9 @@ SCRIPT_DIR="$(d=${BASH_SOURCE[0]%/*}; [ "$d" != "${BASH_SOURCE[0]}" ] || d=.; cd
 . "$SCRIPT_DIR/fm-supervision-engine-lib.sh"
 # shellcheck source=bin/fm-afk-contract.sh
 . "$SCRIPT_DIR/fm-afk-contract.sh"
+# shellcheck source=bin/fm-home-drift-lib.sh
+. "$SCRIPT_DIR/fm-home-drift-lib.sh"
+fm_home_drift_warn
 
 DRAIN_TMP=
 DRAIN_VIEW_TMP=
