@@ -1,0 +1,33 @@
+Real product: /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3MJ23FCMZW1CK211YRTBX8N/bin/fm-claude-stop-autoarm.sh
+
+Invocation: fm-claude-stop-autoarm.sh --help
+Usage: fm-claude-stop-autoarm.sh
+
+Claude Stop hook registered in .claude/settings.json; not for manual use.
+It reads the Stop payload on stdin and, in a primary home that needs
+supervision, arms the watcher or supervision host for this session.
+Exit 0 is silent; exit 2 carries a rewake banner on stderr.
+exit=0
+
+Invocation: fm-claude-stop-autoarm.sh --bogus
+error: unknown argument: --bogus
+Usage: fm-claude-stop-autoarm.sh
+
+Claude Stop hook registered in .claude/settings.json; not for manual use.
+It reads the Stop payload on stdin and, in a primary home that needs
+supervision, arms the watcher or supervision host for this session.
+Exit 0 is silent; exit 2 carries a rewake banner on stderr.
+exit=2
+
+Invocation: fm-claude-stop-autoarm.sh --help --bogus
+Usage: fm-claude-stop-autoarm.sh
+
+Claude Stop hook registered in .claude/settings.json; not for manual use.
+It reads the Stop payload on stdin and, in a primary home that needs
+supervision, arms the watcher or supervision host for this session.
+Exit 0 is silent; exit 2 carries a rewake banner on stderr.
+exit=0
+
+Invocation: fm-claude-stop-autoarm.sh [no arguments, unowned lock]
+exit=0
+state/config byte-identical to pre-invocation snapshot; no host, arm, or epoch created
