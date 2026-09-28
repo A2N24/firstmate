@@ -22,6 +22,7 @@
 #   - own checkout         : cwd inside the script's own checkout -> quiet
 #   - outside checkouts    : cwd outside any checkout             -> quiet
 #   - explicit override    : FM_HOME=home-b + FM_STATE_OVERRIDE   -> quiet
+#   - non-dir override     : FM_HOME=home-b + timeout override    -> warn
 #
 # Each run also proves the command still completed - the warning diagnoses,
 # never refuses - and that the sibling's own commands stay unaffected.
@@ -123,6 +124,15 @@ test_override_suppresses() {
   pass "explicit override stays quiet"
 }
 
+test_nondir_override_warns() {
+  local out
+  # A non-directory override is not home addressing: it must not silence the
+  # drift warning the way FM_STATE_OVERRIDE does.
+  out=$(run_in "$HOME_A" FM_HOME="$HOME_B" FM_TIMEOUT_MECHANISM_OVERRIDE=bash)
+  assert_contains "$out" "$WARN_NEEDLE" "a non-directory override must not suppress the drift warning"
+  pass "non-directory override does not suppress"
+}
+
 test_inherited_drift_warns
 test_nested_cwd_drift_warns
 test_pane_env_leak_warns
@@ -131,3 +141,4 @@ test_honest_addressing_quiet
 test_own_checkout_quiet
 test_outside_checkouts_quiet
 test_override_suppresses
+test_nondir_override_warns

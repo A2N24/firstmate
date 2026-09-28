@@ -18,11 +18,12 @@
 #
 #   1. FM_HOME is set and nonempty. An unset or empty FM_HOME resolves to the
 #      invoked checkout's own root, so there is nothing to disagree with.
-#   2. No FM_*_OVERRIDE variable carries a value. A caller passing a home plus
-#      explicit directory overrides (fm-remote-secondmate-control, teardown's
-#      per-home sweeps, seeded provisioning, the test sandbox) is deliberately
-#      addressing that home - explicit, not inferred - and a warning would
-#      only hide real drift behind routine noise.
+#   2. No directory-relocating FM_*_OVERRIDE carries a value. A caller passing
+#      a home plus explicit directory overrides (fm-remote-secondmate-control,
+#      teardown's per-home sweeps, seeded provisioning, the test sandbox) is
+#      deliberately addressing that home - explicit, not inferred - and a
+#      warning would only hide real drift behind routine noise. Non-directory
+#      knobs such as FM_TIMEOUT_MECHANISM_OVERRIDE do not qualify.
 #   3. The caller's working directory sits inside a firstmate checkout whose
 #      canonical path differs from FM_HOME's. Walked up through ancestor
 #      directories, the first directory holding bin/fm-session-start.sh is the
@@ -49,10 +50,11 @@
 # bin/fm-session-start.sh); return 1 when <dir> is unreachable or no ancestor
 # qualifies. Bounded so a pathological tree can never loop forever.
 fm_home_drift_enclosing() {
-  local dir=${1:-$PWD} guard=0
+  local dir=${1:-$PWD}
   dir=$(cd "$dir" 2>/dev/null && pwd -P) || return 1
-  while [ "$guard" -lt 64 ]; do
-    guard=$((guard + 1))
+  # Each iteration strips one component and bottoms out at /, so the loop
+  # always terminates.
+  while :; do
     if [ -f "$dir/bin/fm-session-start.sh" ]; then
       printf '%s\n' "$dir"
       return 0
@@ -61,17 +63,20 @@ fm_home_drift_enclosing() {
     dir=${dir%/*}
     [ -n "$dir" ] || dir=/
   done
-  return 1
 }
 
 # fm_home_drift_warn: emit the drift warning described above, or nothing.
 fm_home_drift_warn() {
   local home=${FM_HOME:-} resolved enclosing v
   [ -n "$home" ] || return 0
-  for v in "${!FM_@}"; do
-    case "$v" in
-      *_OVERRIDE) [ -z "${!v}" ] || return 0 ;;
-    esac
+  # Only a nonempty directory-relocating override marks deliberate cross-home
+  # addressing; unrelated FM_*_OVERRIDE knobs (timeout mechanism, remote-job
+  # platform pin, /proc root, harness test seams) must not silence the warn.
+  for v in FM_ROOT_OVERRIDE FM_STATE_OVERRIDE FM_DATA_OVERRIDE \
+           FM_PROJECTS_OVERRIDE FM_CONFIG_OVERRIDE \
+           FM_PENDING_REPLY_DIR_OVERRIDE \
+           FM_CREW_STATE_META_OVERRIDE FM_CREW_STATE_STATUS_OVERRIDE; do
+    [ -z "${!v:-}" ] || return 0
   done
   resolved=$(cd "$home" 2>/dev/null && pwd -P || printf '%s' "${home%/}")
   enclosing=$(fm_home_drift_enclosing "${PWD:-.}") || return 0
