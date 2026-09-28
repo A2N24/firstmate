@@ -236,6 +236,13 @@
 #   itself a linked worktree of the project repository still launches. A pane
 #   that never reaches an isolated worktree refuses at the end of that wait,
 #   naming the last path seen and why it was rejected.
+#   Isolation cannot see a seized slot either: Treehouse's pool lease is
+#   pid-based, so a host crash plus a backend resume under new pids frees every
+#   live task's slot at once, and `treehouse get` may hand one live task's slot
+#   to the next spawn (issue #947). Before the slot is claimed or freshened,
+#   the resolved path is therefore refused whenever another task's record names
+#   it as its worktree and that task's endpoint cannot be proven agent-free -
+#   including a task the slot's own owner claim names in another home's state.
 #   That placement is proven only at launch. Every ship or scout pane therefore
 #   also receives `export FM_TASK_ID=<task-id>` before the launch command, on
 #   the same channel as GOTMPDIR, and bin/fm-test-run.sh refuses to execute the
@@ -3255,6 +3262,70 @@ validate_spawn_worktree() { # <source> <inspect-target>
   fi
 }
 
+# Whether a task record still names <resolved-worktree> as its task's local
+# copy while that task's recorded endpoint cannot be proven agent-free.
+# `dead` (endpoint present but holding only shells, or missing outright) means
+# the record is stale but nothing live occupies the worktree, so only reads
+# that cannot prove the agent gone seize the slot. A remote task's record
+# names remote paths and a remote endpoint, so it is never evidence against a
+# local slot. On a seizing record the task id, endpoint target, and liveness
+# read are left in SPAWN_SEIZED_* for the refusal message.
+SPAWN_SEIZED_TASK=
+SPAWN_SEIZED_ENDPOINT=
+SPAWN_SEIZED_STATE=
+spawn_meta_seizes_worktree() { # <meta-file> <resolved-worktree>
+  local meta=$1 wt_real=$2 recorded_wt backend target agent_alive
+  SPAWN_SEIZED_TASK=
+  recorded_wt=$(fm_meta_get "$meta" worktree)
+  if [ -z "$recorded_wt" ] || [ "$(real_path_or_raw "$recorded_wt")" != "$wt_real" ]; then
+    return 1
+  fi
+  grep -q '^remote_host=.' "$meta" 2>/dev/null && return 1
+  backend=$(fm_backend_of_meta "$meta")
+  target=$(fm_backend_target_of_meta "$meta")
+  [ -n "$target" ] || return 1
+  agent_alive=$(fm_backend_agent_alive "$backend" "$target" 2>/dev/null || printf 'unknown\n')
+  [ "$agent_alive" = dead ] && return 1
+  SPAWN_SEIZED_TASK=$(basename "$meta" .meta)
+  SPAWN_SEIZED_ENDPOINT=$target
+  SPAWN_SEIZED_STATE=$agent_alive
+  return 0
+}
+
+# Refuse the worktree `treehouse get` resolved to when another task's record
+# still names it and that task's endpoint cannot be proven agent-free. A slot
+# lease is pid-based, so a host crash plus a backend resume under new pids
+# frees every live task's slot at once and `treehouse get` can hand one live
+# task's slot to the next spawn (issue #947); neither the pane settle nor the
+# isolation guard can see that, because a seized slot IS a real isolated
+# worktree. Every state/*.meta whose recorded worktree resolves to the same
+# path is checked, plus the one record the slot's own owner claim can name in
+# another home's state dir. This runs before the slot is claimed or its base
+# is freshened, so a refusal can neither strip the live task's claim nor
+# reset its checkout.
+spawn_refuse_seized_worktree() { # <worktree> <inspect-target>
+  local worktree=$1 inspect_target=$2 wt_real meta claimed_meta
+  wt_real=$(real_path_or_raw "$worktree")
+  for meta in "$STATE"/*.meta; do
+    [ -f "$meta" ] && [ ! -L "$meta" ] || continue
+    spawn_meta_seizes_worktree "$meta" "$wt_real" && break
+  done
+  if [ -z "$SPAWN_SEIZED_TASK" ] && fm_treehouse_pool_slot "$PROJ_ABS" "$worktree"; then
+    fm_treehouse_slot_owner_state "$worktree" "$ID"
+    if [ "$FM_TREEHOUSE_SLOT_OWNER" = other ] && [ -n "$FM_TREEHOUSE_SLOT_OWNER_ID" ] \
+       && [ -n "$FM_TREEHOUSE_SLOT_OWNER_HOME" ]; then
+      claimed_meta=$FM_TREEHOUSE_SLOT_OWNER_HOME/state/$FM_TREEHOUSE_SLOT_OWNER_ID.meta
+      if [ -f "$claimed_meta" ] && [ ! -L "$claimed_meta" ]; then
+        spawn_meta_seizes_worktree "$claimed_meta" "$wt_real" || true
+      fi
+    fi
+  fi
+  if [ -n "$SPAWN_SEIZED_TASK" ]; then
+    echo "error: treehouse get returned '$worktree', but task $SPAWN_SEIZED_TASK still records it as its worktree and its recorded endpoint $SPAWN_SEIZED_ENDPOINT reads '$SPAWN_SEIZED_STATE', not provably agent-free; refusing to seize a live task's worktree. Re-pin the pool's stale leases (treehouse get --lease on the free slots matching live tasks' recorded worktrees) or tear down $SPAWN_SEIZED_TASK first; inspect window $inspect_target" >&2
+    exit 1
+  fi
+}
+
 # A pooled slot whose only deviation is a submodule gitlink is stale, not dirty:
 # an earlier refresh moved the superproject and left the submodule checkout on
 # the pin the previous base recorded. The refusal still stands and this gate
@@ -4278,6 +4349,13 @@ elif [ "$KIND" != secondmate ] && [ "$BACKEND" != orca ]; then
   fi
 
   validate_spawn_worktree "treehouse get" "$T"
+
+  # A stale Treehouse lease can hand this spawn a slot a live task still
+  # occupies: the pane-settle and isolation screens above cannot tell a seized
+  # slot from a free one, so only this fleet's own task records can - and the
+  # refusal must run before the claim and the freshen below, which would
+  # otherwise overwrite the live task's claim and reset its checkout.
+  spawn_refuse_seized_worktree "$WT" "$T"
 
   # Claim the pool slot for this task. The interactive `treehouse get` sent to
   # the pane above records only a process lease (Treehouse's durable
