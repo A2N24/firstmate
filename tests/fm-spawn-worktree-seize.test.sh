@@ -212,8 +212,58 @@ test_other_task_worktree_does_not_block() {
   pass "a live task holding a different worktree does not block a free slot"
 }
 
+# A claim is keyed by task id, and task ids are scoped to homes: a foreign-home
+# task can carry the very id this spawn is about to take. The claim reads
+# 'mine' by id alone, so only the claim's recorded home= can expose that the
+# claimant lives in another home's state dir.
+test_same_id_foreign_home_claim_is_refused() {
+  local rec id foreign out status
+  id=seize-sameid-z1
+  rec=$(make_seize_case seize-sameid "$id")
+  read_seize_record "$rec"
+  foreign="$TMP_ROOT/seize-sameid/foreignhome"
+  mkdir -p "$foreign/state"
+  write_owner_claim "$SLOT_DIR" "$id" "$foreign"
+  write_task_meta "$foreign/state/$id.meta" "$id" "$SLOT_DIR" "victsess5:fm-$id"
+
+  out=$(FM_FAKE_DUPLICATE_WINDOW="fm-$id" FM_FAKE_PANE_COMMAND=claude \
+    run_seize_spawn "$id")
+  status=$?
+  [ "$status" -ne 0 ] || \
+    fail "spawn seized a foreign-home live task whose claim collided on its own id"$'\n'"$out"
+  assert_contains "$out" "$id" "refusal did not name the same-id foreign task"
+  assert_absent "$HOME_DIR/state/$id.meta" "refused spawn published task metadata"
+  assert_grep "home=$foreign" "$(dirname "$SLOT_DIR")/.fm-slot-owner" \
+    "refusal stripped or overwrote the foreign task's slot claim"
+  pass "a same-id claim from a foreign home is refused"
+}
+
+# A claim that cannot be read as a claim can never prove the slot free, and
+# the claim step would silently overwrite it - the same fail-closed call
+# teardown makes on a slot claim it cannot prove.
+test_unverifiable_claim_is_refused() {
+  local rec id marker out status
+  id=seize-badclaim-z1
+  rec=$(make_seize_case seize-badclaim "$id")
+  read_seize_record "$rec"
+  marker="$(dirname "$SLOT_DIR")/.fm-slot-owner"
+  printf 'task=stale-task-z1\n' > "$marker"
+
+  out=$(run_seize_spawn "$id")
+  status=$?
+  [ "$status" -ne 0 ] || \
+    fail "spawn seized a slot whose claim names a task without a home to inspect"$'\n'"$out"
+  assert_contains "$out" "stale-task-z1" "refusal did not name the claimant"
+  assert_absent "$HOME_DIR/state/$id.meta" "refused spawn published task metadata"
+  assert_equals "task=stale-task-z1" "$(cat "$marker")" \
+    "refusal overwrote the unverifiable claim"
+  pass "a claim that cannot be inspected is refused"
+}
+
 test_seized_live_task_worktree_is_refused
 test_seized_foreign_home_task_via_claim_is_refused
+test_same_id_foreign_home_claim_is_refused
+test_unverifiable_claim_is_refused
 test_dead_recorded_endpoint_does_not_block
 test_missing_recorded_endpoint_does_not_block
 test_stale_claim_for_other_worktree_does_not_block

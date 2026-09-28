@@ -3299,12 +3299,18 @@ spawn_meta_seizes_worktree() { # <meta-file> <resolved-worktree>
 # task's slot to the next spawn (issue #947); neither the pane settle nor the
 # isolation guard can see that, because a seized slot IS a real isolated
 # worktree. Every state/*.meta whose recorded worktree resolves to the same
-# path is checked, plus the one record the slot's own owner claim can name in
-# another home's state dir. This runs before the slot is claimed or its base
-# is freshened, so a refusal can neither strip the live task's claim nor
-# reset its checkout.
+# path is checked. A pool slot's owner claim is then read as evidence, never
+# as the answer: its task= is home-scoped (a foreign task can collide on this
+# spawn's own id), so only a claim whose home= resolves outside this home
+# leads to one more record worth checking, in that home's state dir. A claim
+# that cannot be read as a claim, or that names a task without a home to
+# inspect, cannot prove the slot free and the claim step below would overwrite
+# it - the same fail-closed call bin/fm-teardown.sh makes on a slot claim it
+# cannot prove, so the spawn refuses there too. This runs before the slot is
+# claimed or its base is freshened, so a refusal can neither strip the live
+# task's claim nor reset its checkout.
 spawn_refuse_seized_worktree() { # <worktree> <inspect-target>
-  local worktree=$1 inspect_target=$2 wt_real meta claimed_meta
+  local worktree=$1 inspect_target=$2 wt_real meta claimed_meta marker
   wt_real=$(real_path_or_raw "$worktree")
   for meta in "$STATE"/*.meta; do
     [ -f "$meta" ] && [ ! -L "$meta" ] || continue
@@ -3312,13 +3318,33 @@ spawn_refuse_seized_worktree() { # <worktree> <inspect-target>
   done
   if [ -z "$SPAWN_SEIZED_TASK" ] && fm_treehouse_pool_slot "$PROJ_ABS" "$worktree"; then
     fm_treehouse_slot_owner_state "$worktree" "$ID"
-    if [ "$FM_TREEHOUSE_SLOT_OWNER" = other ] && [ -n "$FM_TREEHOUSE_SLOT_OWNER_ID" ] \
-       && [ -n "$FM_TREEHOUSE_SLOT_OWNER_HOME" ]; then
-      claimed_meta=$FM_TREEHOUSE_SLOT_OWNER_HOME/state/$FM_TREEHOUSE_SLOT_OWNER_ID.meta
-      if [ -f "$claimed_meta" ] && [ ! -L "$claimed_meta" ]; then
-        spawn_meta_seizes_worktree "$claimed_meta" "$wt_real" || true
-      fi
-    fi
+    case "$FM_TREEHOUSE_SLOT_OWNER" in
+      absent) ;;
+      unsafe)
+        # A marker that is not a plain file reaches the claim step below,
+        # which refuses it on its own terms; this refusal exists for the plain
+        # file whose contents cannot be read as a claim, which that step would
+        # otherwise silently overwrite.
+        marker=$(fm_treehouse_slot_owner_marker "$worktree" 2>/dev/null || printf 'beside %s\n' "$worktree")
+        if [ -f "$marker" ] && [ ! -L "$marker" ]; then
+          echo "error: treehouse get returned '$worktree', but its pool slot carries an owner claim that cannot be read as a claim (a plain file with task= and home= lines at $marker), so the slot cannot be proved free of another task; refusing to seize it. Inspect or repair the claim, or re-pin the pool's stale leases; inspect window $inspect_target" >&2
+          exit 1
+        fi
+        ;;
+      *)
+        if [ -z "$FM_TREEHOUSE_SLOT_OWNER_HOME" ]; then
+          marker=$(fm_treehouse_slot_owner_marker "$worktree" 2>/dev/null || printf 'beside %s\n' "$worktree")
+          echo "error: treehouse get returned '$worktree', but its pool slot's owner claim names task $FM_TREEHOUSE_SLOT_OWNER_ID without a home= to inspect it under ($marker), so the slot cannot be proved free of another task; refusing to seize it. Inspect or repair the claim, or re-pin the pool's stale leases; inspect window $inspect_target" >&2
+          exit 1
+        fi
+        if [ "$(real_path_or_raw "$FM_TREEHOUSE_SLOT_OWNER_HOME")" != "$(real_path_or_raw "$FM_HOME")" ]; then
+          claimed_meta=$FM_TREEHOUSE_SLOT_OWNER_HOME/state/$FM_TREEHOUSE_SLOT_OWNER_ID.meta
+          if [ -f "$claimed_meta" ] && [ ! -L "$claimed_meta" ]; then
+            spawn_meta_seizes_worktree "$claimed_meta" "$wt_real" || true
+          fi
+        fi
+        ;;
+    esac
   fi
   if [ -n "$SPAWN_SEIZED_TASK" ]; then
     echo "error: treehouse get returned '$worktree', but task $SPAWN_SEIZED_TASK still records it as its worktree and its recorded endpoint $SPAWN_SEIZED_ENDPOINT reads '$SPAWN_SEIZED_STATE', not provably agent-free; refusing to seize a live task's worktree. Re-pin the pool's stale leases (treehouse get --lease on the free slots matching live tasks' recorded worktrees) or tear down $SPAWN_SEIZED_TASK first; inspect window $inspect_target" >&2
