@@ -1,0 +1,1 @@
+Real outcome-store append: store_rows=100 tail_bytes=1044214 first_tail_seq=15 last_tail_seq=100; tail is byte-identical to the newest whole store rows; budget=1048576.

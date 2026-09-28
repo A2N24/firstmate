@@ -1,0 +1,45 @@
+Claude Code flag off; stored captain outcome; no mod notices expected:
+
+ ▐▛███▛█   Claude Code v2.1.284
+▝▜██████▀  Haiku 4.5 · Claude Max
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/52b07e9083e7/01M3MJSZ21NX50JKZX0SRNZG24
+
+⚠ AGENTS.md is over the 40.0k-char limit (48.0k chars) · /memory to free up context
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ Try "fix lint errors"
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  ⏵⏵ bypass permissions on (shift+tab to cycle) · ← for agents

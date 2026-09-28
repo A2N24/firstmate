@@ -1,0 +1,45 @@
+Calm preference=on; real Claude primary with supervision-host latch file transitions:
+
+ ▐▛███▛█   Claude Code v2.1.284
+▝▜██████▀  Haiku 4.5 · Claude Max
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/52b07e9083e7/01M3MJSZ21NX50JKZX0SRNZG24
+
+⚠ AGENTS.md is over the 40.0k-char limit (48.0k chars) · /memory to free up context
+
+⏺ firstmate-calm: ⛵ calm-routine: Visible even with Calm on
+
+⏺ firstmate-calm: ⛵ Supervision session paused after repeated engine errors; main will handle wakes while it cools down.
+
+⏺ firstmate-calm: ⛵ Supervision session recovered after a successful cooldown probe.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+❯ Try "fix lint errors"
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+  ⏵⏵ bypass permissions on (shift+tab to cycle) · ← for agents
