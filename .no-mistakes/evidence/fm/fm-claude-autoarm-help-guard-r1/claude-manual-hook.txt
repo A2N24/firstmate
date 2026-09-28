@@ -1,0 +1,36 @@
+Real Claude Code tmux lab primary (Claude 2.1.284 (Claude Code))
+
+⏺ Captain, here's the output:
+
+  Usage: fm-claude-stop-autoarm.sh
+
+  Claude Stop hook registered in .claude/settings.json; not for manual use.
+  It reads the Stop payload on stdin and, in a primary home that needs
+  supervision, arms the watcher or supervision host for this session.
+  Exit 0 is silent; exit 2 carries a rewake banner on stderr.
+  error: unknown argument: --bogus
+  Usage: fm-claude-stop-autoarm.sh
+
+  Claude Stop hook registered in .claude/settings.json; not for manual use.
+  It reads the Stop payload on stdin and, in a primary home that needs
+  supervision, arms the watcher or supervision host for this session.
+  Exit 0 is silent; exit 2 carries a rewake banner on stderr.
+  exit=2
+
+✻ Cogitated for 9s · done 12:13 PM
+
+────────────────────────────────────────────────────────────────────────────────
+❯ now try it with a valid stdin payload
+────────────────────────────────────────────────────────────────────────────────
+  Opus 4.8 ctx window   ▉               60.4k / 1.0M
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents
+
+Isolated lab state after manual --help and --bogus:
+total 16
+drwxr-xr-x@ 4 kunchen  staff  128 Sep 28 12:13 .
+drwx------@ 8 kunchen  staff  256 Sep 28 12:11 ..
+-rw-r--r--@ 1 kunchen  staff    6 Sep 28 12:13 .lock
+-rw-r--r--@ 1 kunchen  staff   44 Sep 28 12:11 task.meta
+
+Persisted task checksum:
+43657233 44 /var/folders/5x/4nqprlbx0518k3ybcb1sz6gr0000gn/T//fm-lab.HV1Pn0/state/task.meta
