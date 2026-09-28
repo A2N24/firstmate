@@ -1,0 +1,2 @@
+ok - quiet mode's record silences no captain-held recheck, on the watcher's cadence or through a quiet daemon's one-shot
+ok - a captain-held item is never rechecked while the away-posture record exists, and the recheck returns once the record is archived
