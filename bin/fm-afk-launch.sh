@@ -404,21 +404,26 @@ fm_afk_launch_entry_cmd() {
 # itself; the launcher names it here (bin/fm-supervise-daemon.sh
 # fm_daemon_primary_harness).
 fm_afk_launch_daemon_cmd() {  # <captain-target> <captain-backend> [bound 0|1]
-  # A hosted daemon terminal's ambient discovery env names the HOST's pane,
-  # never the captain's: the new pane's $TMUX_PANE is itself, and a herdr
-  # workspace pane marks its own session. env -u strips those markers so the
-  # daemon can only arm an explicit pass-through or the verified session
-  # binding - never a fallback that resolves to its own pane
+  # A hosted daemon terminal's ambient env names the HOST, never the captain:
+  # the new pane's $TMUX_PANE is itself, a herdr workspace pane marks its own
+  # session, and a long-lived tmux server can hand the detached session an old
+  # FM_SUPERVISOR_* override that would arm a stale pane without the binding's
+  # same-session check. env -u strips every supervisor discovery and
+  # declaration variable so the daemon can only arm an explicit pass-through
+  # set right here or the verified session binding
   # (kunchenguid/firstmate#1506).
   if [ "${3:-0}" = 1 ]; then
     # A bound captain identity must NOT be pinned through explicit
     # FM_SUPERVISOR_* env: the daemon re-resolves and re-verifies the
     # session record itself before every injection (a hard pin would
     # smuggle a stale identity past that same-session check).
-    printf 'exec env -u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION FM_HOME=%q FM_DAEMON_PRIMARY_HARNESS=%q %q' \
+    printf 'exec env -u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION -u FM_SUPERVISOR_TARGET -u FM_SUPERVISOR_BACKEND -u FM_SUPERVISOR_TARGET_SOURCE FM_HOME=%q FM_DAEMON_PRIMARY_HARNESS=%q %q' \
       "$FM_HOME" "$(fm_afk_launch_primary_harness)" "$(fm_afk_launch_entry_cmd)"
   else
-    printf 'exec env -u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION FM_HOME=%q FM_SUPERVISOR_TARGET=%q FM_SUPERVISOR_BACKEND=%q FM_DAEMON_PRIMARY_HARNESS=%q %q' \
+    # The explicit pin is assigned AFTER the -u strip so only the launcher's
+    # own resolved values - never an inherited server-environment override -
+    # reach the daemon.
+    printf 'exec env -u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION -u FM_SUPERVISOR_TARGET -u FM_SUPERVISOR_BACKEND -u FM_SUPERVISOR_TARGET_SOURCE FM_HOME=%q FM_SUPERVISOR_TARGET=%q FM_SUPERVISOR_BACKEND=%q FM_DAEMON_PRIMARY_HARNESS=%q %q' \
       "$FM_HOME" "$1" "$2" "$(fm_afk_launch_primary_harness)" "$(fm_afk_launch_entry_cmd)"
   fi
 }

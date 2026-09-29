@@ -1696,13 +1696,13 @@ unit_daemon_cmd_strips_host_pane_env() {
     FM_HOME=/tmp/fm-cmd-check fm_afk_launch_daemon_cmd "%1" tmux 0
   ' _ "$LAUNCH" 2>/dev/null)
   case "$bound" in
-    *"-u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION"*)
-      pass "daemon cmd: bound form strips ambient discovery env" ;;
-    *) fail "daemon cmd: bound form leaks host discovery env: $bound" ;;
+    *"-u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION -u FM_SUPERVISOR_TARGET -u FM_SUPERVISOR_BACKEND -u FM_SUPERVISOR_TARGET_SOURCE"*)
+      pass "daemon cmd: bound form strips ambient discovery env and inherited supervisor overrides" ;;
+    *) fail "daemon cmd: bound form leaks host env: $bound" ;;
   esac
   case "$explicit" in
-    *"-u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION"*"FM_SUPERVISOR_TARGET"*)
-      pass "daemon cmd: explicit form strips ambient discovery env and still pins the supervisor" ;;
+    *"-u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION -u FM_SUPERVISOR_TARGET -u FM_SUPERVISOR_BACKEND -u FM_SUPERVISOR_TARGET_SOURCE "*"FM_SUPERVISOR_TARGET="*)
+      pass "daemon cmd: explicit form strips ambient env and re-pins the supervisor it resolved" ;;
     *) fail "daemon cmd: explicit form wrong env handling: $explicit" ;;
   esac
 }
