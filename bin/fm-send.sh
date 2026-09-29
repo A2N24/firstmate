@@ -231,8 +231,7 @@ if [ -z "${FM_HOME+x}" ] || [ -z "${FM_HOME:-}" ]; then
   exit 1
 fi
 # shellcheck source=bin/fm-home-drift-lib.sh
-. "$SCRIPT_DIR/fm-home-drift-lib.sh"
-fm_home_drift_warn
+if [ -f "$SCRIPT_DIR/fm-home-drift-lib.sh" ]; then . "$SCRIPT_DIR/fm-home-drift-lib.sh" && fm_home_drift_warn; fi
 
 STATE="${FM_STATE_OVERRIDE:-$FM_HOME/state}"
 if [ ! -d "$FM_HOME" ]; then

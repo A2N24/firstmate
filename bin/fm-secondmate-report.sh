@@ -74,8 +74,7 @@ case "$HOME_DIR" in
     ;;
 esac
 # shellcheck source=bin/fm-home-drift-lib.sh
-. "$SCRIPT_DIR/fm-home-drift-lib.sh"
-fm_home_drift_warn
+if [ -f "$SCRIPT_DIR/fm-home-drift-lib.sh" ]; then . "$SCRIPT_DIR/fm-home-drift-lib.sh" && fm_home_drift_warn; fi
 STATE_DIR="${FM_STATE_OVERRIDE:-$HOME_DIR/state}"
 
 DESTINATION=

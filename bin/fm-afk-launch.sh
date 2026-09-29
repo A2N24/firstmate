@@ -115,8 +115,7 @@ FM_AFK_LAUNCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FM_ROOT="${FM_ROOT_OVERRIDE:-$(cd "$FM_AFK_LAUNCH_DIR/.." && pwd)}"
 FM_HOME="${FM_HOME:-${FM_ROOT_OVERRIDE:-$FM_ROOT}}"
 # shellcheck source=bin/fm-home-drift-lib.sh
-. "$FM_AFK_LAUNCH_DIR/fm-home-drift-lib.sh"
-fm_home_drift_warn
+if [ -f "$FM_AFK_LAUNCH_DIR/fm-home-drift-lib.sh" ]; then . "$FM_AFK_LAUNCH_DIR/fm-home-drift-lib.sh" && fm_home_drift_warn; fi
 case "$FM_HOME" in
   /*) ;;
   *)

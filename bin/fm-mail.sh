@@ -70,8 +70,7 @@ if [ -z "$FM_HOME" ]; then
   FM_HOME="$(cd "$SCRIPT_DIR/.." && pwd)"
 fi
 # shellcheck source=bin/fm-home-drift-lib.sh
-. "$SCRIPT_DIR/fm-home-drift-lib.sh"
-fm_home_drift_warn
+if [ -f "$SCRIPT_DIR/fm-home-drift-lib.sh" ]; then . "$SCRIPT_DIR/fm-home-drift-lib.sh" && fm_home_drift_warn; fi
 ENV_FILE="$FM_HOME/.env"
 # Load the home .env for keys not already set, so a direct invocation's
 # environment overrides .env exactly like the Relay/FMX contract (fmx_env_get:
