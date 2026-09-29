@@ -1,0 +1,27 @@
+--- real Claude primary pane ---
+
+ ▐▛███▛█   Claude Code v2.1.284
+▝▜██████▀  Opus 4.8 with high effort · Claude Max
+ ▝▝   ▝▝   ~/.no-mistakes/worktrees/52b07e9083e7/01M3PGKPCS760WGZRWZE15QA8B
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                              ● high · /effort
+────────────────────────────────────────────────────────────────────────────────
+❯ Try "create a util logging.py that..."
+────────────────────────────────────────────────────────────────────────────────
+
+  ⏵⏵ auto mode on (shift+tab to cycle) · ← for agents
+--- lab primary process ---
+4619 2.1.284

@@ -1,0 +1,24 @@
+=== claude absent ===
+gate=0
+- Supervision host: on; it takes away-posture wakes and, where the dialog mirror is verified, eligible attended wakes itself, and hands the rest to you (protocol at the end of this block).
+=== claude off ===
+gate=1
+no host block
+=== claude default haiku ===
+gate=0
+- Supervision host: on; it takes away-posture wakes and, where the dialog mirror is verified, eligible attended wakes itself, and hands the rest to you (protocol at the end of this block).
+=== codex absent ===
+gate=1
+no host block
+=== cursor absent ===
+gate=1
+no host block
+=== opencode absent ===
+gate=1
+no host block
+=== omp absent ===
+gate=1
+no host block
+=== grok absent ===
+gate=1
+no host block
