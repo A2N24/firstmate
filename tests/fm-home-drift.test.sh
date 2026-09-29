@@ -23,6 +23,7 @@
 #   - outside checkouts    : cwd outside any checkout             -> quiet
 #   - explicit override    : FM_HOME=home-b + FM_STATE_OVERRIDE   -> quiet
 #   - non-dir override     : FM_HOME=home-b + timeout override    -> warn
+#   - operational home     : FM_HOME=plain dir (not a checkout)   -> quiet
 #
 # Each run also proves the command still completed - the warning diagnoses,
 # never refuses - and that the sibling's own commands stay unaffected.
@@ -133,6 +134,16 @@ test_nondir_override_warns() {
   pass "non-directory override does not suppress"
 }
 
+test_operational_home_quiet() {
+  local out
+  # A non-checkout FM_HOME is a supported operational home addressed on
+  # purpose - that is how every test sandbox pins its state, so no drift.
+  mkdir -p "$TMP/plain-home"
+  out=$(run_in "$HOME_A" FM_HOME="$TMP/plain-home")
+  assert_not_contains "$out" "$WARN_NEEDLE" "a non-checkout FM_HOME is deliberate addressing, not drift"
+  pass "non-checkout operational home stays quiet"
+}
+
 test_inherited_drift_warns
 test_nested_cwd_drift_warns
 test_pane_env_leak_warns
@@ -142,3 +153,4 @@ test_own_checkout_quiet
 test_outside_checkouts_quiet
 test_override_suppresses
 test_nondir_override_warns
+test_operational_home_quiet

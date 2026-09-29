@@ -25,18 +25,22 @@
 #      warning would only hide real drift behind routine noise. Non-directory
 #      knobs such as FM_TIMEOUT_MECHANISM_OVERRIDE do not qualify.
 #   3. The caller's working directory sits inside a firstmate checkout whose
-#      canonical path differs from FM_HOME's. Walked up through ancestor
-#      directories, the first directory holding bin/fm-session-start.sh is the
-#      enclosing checkout - the home the shell visibly sits in. Outside any
-#      checkout the operator is simply addressing FM_HOME by name and there
-#      is no misleading home context to warn about.
+#      canonical path differs from FM_HOME's, AND FM_HOME itself names a
+#      firstmate checkout. Walked up through ancestor directories, the first
+#      directory holding bin/fm-session-start.sh is the enclosing checkout -
+#      the home the shell visibly sits in. Outside any checkout the operator
+#      is simply addressing FM_HOME by name and there is no misleading home
+#      context to warn about, and an FM_HOME that is not itself a checkout is
+#      a supported non-checkout operational home being addressed by name,
+#      not drift.
 #
 # The check is deliberately not "FM_HOME differs from the script's own code
 # root": FM_ROOT != FM_HOME is by itself no violation, because callers
 # legitimately run one checkout's scripts against another home's directories
 # through overrides, and a non-checkout operational home is a supported
-# layout. The leak this warns on is the opposite signal - the shell presents
-# one home while the environment commands another.
+# layout - so the warn requires both sides to be checkouts. The leak this
+# warns on is the opposite signal - the shell presents one home while the
+# environment commands another.
 #
 # It stays a warning, never a refusal: legitimate cross-home addressing must
 # keep working, and a refusal would turn supported layouts into failures. The
@@ -48,7 +52,8 @@
 # fm_home_drift_enclosing <dir>: print the canonical path of the nearest
 # ancestor-or-self directory that looks like a firstmate checkout (holds
 # bin/fm-session-start.sh); return 1 when <dir> is unreachable or no ancestor
-# qualifies. Bounded so a pathological tree can never loop forever.
+# qualifies. The walk strips one component per step and bottoms out at /, so
+# it terminates by construction at any depth.
 fm_home_drift_enclosing() {
   local dir=${1:-$PWD}
   dir=$(cd "$dir" 2>/dev/null && pwd -P) || return 1
@@ -79,6 +84,9 @@ fm_home_drift_warn() {
     [ -z "${!v:-}" ] || return 0
   done
   resolved=$(cd "$home" 2>/dev/null && pwd -P || printf '%s' "${home%/}")
+  # Only a checkout-looking FM_HOME can drift against the enclosing one; a
+  # plain directory is an operational home addressed on purpose.
+  [ -f "$resolved/bin/fm-session-start.sh" ] || return 0
   enclosing=$(fm_home_drift_enclosing "${PWD:-.}") || return 0
   [ "$enclosing" = "$resolved" ] && return 0
   printf "warning: FM_HOME '%s' disagrees with the enclosing checkout '%s' - commands act on FM_HOME; unset FM_HOME or pin FM_HOME='%s' to command this checkout's own home\n" \
