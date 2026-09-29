@@ -642,7 +642,7 @@ test_unknown_wake_ack_suppresses_handled_identity() {
     || fail "a lost undelivered unknown wake did not escalate again"
 
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux FM_FAKE_TMUX_SENT="$sent" \
     FM_FAKE_TMUX_CAPTURE="$capture" FM_ESCALATE_BATCH_SECS=0 escalate_flush "$state" \
     || fail "unknown-wake flush failed"
   grep -F 'unknown wake: frobnicate: already-handled' "$state/.subsuper-unknown-acked" >/dev/null \
@@ -692,7 +692,7 @@ test_unknown_wake_ack_failure_still_clears_delivered_digest() {
     || fail "the unknown wake was not handled"
   escalate_add "$state" "done: PR https://example.test/pull/10"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux FM_FAKE_TMUX_SENT="$sent" \
     FM_FAKE_TMUX_CAPTURE="$capture" FM_ESCALATE_BATCH_SECS=0 escalate_flush "$state" 2>/dev/null \
     || fail "a delivered digest was reported undelivered after its acknowledgement write failed"
   delivered_digest "$sent" | grep -F 'unknown wake: frobnicate: ack-write-fails' >/dev/null \
@@ -1537,7 +1537,7 @@ test_escalate_batches_into_one_digest() {
   escalate_add "$state" "event A: done: PR 1"
   escalate_add "$state" "event B: done: PR 2"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux FM_FAKE_TMUX_SENT="$sent" \
     FM_FAKE_TMUX_CAPTURE="$capture" FM_ESCALATE_BATCH_SECS=0 escalate_flush "$state" \
     || fail "escalate_flush failed"
   # A Claude Code primary strips U+2063 from submitted prompts, so the digest
@@ -1570,7 +1570,7 @@ test_escalate_marker_preserving_primary_types_envelope() {
   capture="$dir/pane.txt"; printf '\342\235\257 \n' > "$capture"
   escalate_add "$state" "event C: done: PR 3"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux FM_FAKE_TMUX_SENT="$sent" \
     FM_FAKE_TMUX_CAPTURE="$capture" FM_ESCALATE_BATCH_SECS=0 FM_DAEMON_PRIMARY_HARNESS=codex \
     escalate_flush "$state" || fail "escalate_flush failed for a marker-preserving primary"
   grep -F "${FM_OPERATIONAL_PREFIX}v1 away-supervisor: " "$sent" >/dev/null \
@@ -1621,7 +1621,7 @@ test_escalate_batch_age_uses_first_append() {
   escalate_add "$state" "event B: done: PR 2"
   echo $(( $(date +%s) - 100 )) > "$state/.subsuper-escalations.since"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux FM_FAKE_TMUX_SENT="$sent" \
     FM_FAKE_TMUX_CAPTURE="$capture" FM_ESCALATE_BATCH_SECS=90 FM_HOUSEKEEPING_TICK=0 \
     housekeeping "$state"
   delivered_digest "$sent" | grep -F 'event A: done: PR 1 | event B: done: PR 2' >/dev/null \
@@ -1852,7 +1852,7 @@ test_afk_absent_daemon_does_not_inject() {
   capture="$dir/pane.txt"; printf '\342\235\257 \n' > "$capture"  # a proven-empty bare claude composer: STRICT injection needs positive proof
   escalate_add "$state" "done: PR 1"
   # afk flag deliberately NOT set
-  if PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+  if PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux FM_FAKE_TMUX_SENT="$sent" \
     FM_FAKE_TMUX_CAPTURE="$capture" FM_ESCALATE_BATCH_SECS=0 escalate_flush "$state"; then
     fail "escalate_flush succeeded while afk inactive"
   fi
@@ -1871,7 +1871,7 @@ test_busy_guard_defers_when_supervisor_busy() {
   printf 'esc to interrupt\n' > "$capture"
   escalate_add "$state" "done: PR 1"
   afk_enter "$state"
-  if PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+  if PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux FM_FAKE_TMUX_SENT="$sent" \
     FM_FAKE_TMUX_CAPTURE="$capture" FM_ESCALATE_BATCH_SECS=0 escalate_flush "$state"; then
     fail "escalate_flush should defer when supervisor pane busy"
   fi
@@ -2220,7 +2220,7 @@ test_submit_ack_confirms_on_bordered_empty_composer() {
   local dir fakebin sent verdict
   dir=$(make_bordered_case ack-bordered)
   fakebin="$dir/fakebin"; sent="$dir/sent.log"; : > "$sent"
-  verdict=$(PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  verdict=$(PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     fm_tmux_submit_core "win" "the digest" 3 0.05 0.05)
   [ "$verdict" = empty ] || fail "submit-ACK did not confirm on a bordered-empty composer: $verdict"
   [ "$(grep -cv '\[ENTER\]' "$sent")" -eq 1 ] || fail "digest typed more than once (retype)"
@@ -2236,7 +2236,7 @@ test_submit_ack_reports_pending_on_persistent_swallow() {
   dir=$(make_bordered_case ack-swallow)
   fakebin="$dir/fakebin"; sent="$dir/sent.log"; : > "$sent"
   touch "$dir/.swallow"
-  verdict=$(PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  verdict=$(PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_FAKE_SWALLOW="$dir/.swallow" FM_FAKE_PERSIST_SWALLOW=1 \
     fm_tmux_submit_core "win" "the digest" 3 0.05 0.05)
   [ "$verdict" = pending ] || fail "persistent swallow not reported as pending: $verdict"
@@ -2254,7 +2254,7 @@ test_max_defer_empty_swallow_types_once_and_alarms() {
   escalate_add "$state" "needs-decision: pick A"
   echo $(( $(date +%s) - 600 )) > "$state/.subsuper-escalations.since"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_FAKE_SWALLOW="$dir/.swallow" FM_FAKE_PERSIST_SWALLOW=1 FM_INJECT_CONFIRM_SLEEP=0.05 \
     FM_ESCALATE_BATCH_SECS=99999 FM_MAX_DEFER_SECS=60 housekeeping "$state"
   [ "$(delivered_digest "$sent" 2>/dev/null | grep -c 'Supervisor escalate' || true)" -eq 1 ] \
@@ -2275,7 +2275,7 @@ test_max_defer_flushes_empty_idle_pane() {
   escalate_add "$state" "done: PR https://x/y/pull/1"
   echo $(( $(date +%s) - 600 )) > "$state/.subsuper-escalations.since"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_ESCALATE_BATCH_SECS=99999 FM_MAX_DEFER_SECS=60 FM_INJECT_CONFIRM_SLEEP=0.05 \
     housekeeping "$state"
   [ ! -s "$state/.subsuper-escalations" ] || fail "buffer not cleared after a recovered max-defer flush"
@@ -2292,7 +2292,7 @@ test_max_defer_pending_composer_alarms_without_typing() {
   escalate_add "$state" "needs-decision: pick B"
   echo $(( $(date +%s) - 600 )) > "$state/.subsuper-escalations.since"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_ESCALATE_BATCH_SECS=99999 FM_MAX_DEFER_SECS=60 FM_INJECT_CONFIRM_SLEEP=0.05 \
     housekeeping "$state"
   [ ! -s "$sent" ] || fail "max-defer typed into a pending composer"
@@ -2310,7 +2310,7 @@ test_normal_flush_clears_stale_wedge_marker() {
   printf 'old wedge\n' > "$state/.subsuper-inject-wedged"
   escalate_add "$state" "done: PR https://x/y/pull/2"
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_INJECT_CONFIRM_SLEEP=0.05 escalate_flush "$state" \
     || fail "normal escalate_flush failed"
   [ ! -s "$state/.subsuper-escalations" ] || fail "buffer not cleared after normal flush"
@@ -2336,7 +2336,7 @@ test_oversized_digest_is_bounded_and_kept_durable() {
   raw=$(LC_ALL=C wc -c < "$dir/buffer.orig" | tr -d ' ')
   [ "$raw" -gt 131071 ] || fail "fixture buffer is only $raw bytes; it must exceed one argument's 131,071-byte ceiling"
   afk_enter "$state"
-  LOG="$dir/daemon.log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  LOG="$dir/daemon.log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_FAKE_SEND_MAX_BYTES=131071 FM_INJECT_CONFIRM_SLEEP=0.05 escalate_flush "$state" \
     || fail "oversized digest was not delivered: $(cat "$dir/daemon.log" 2>/dev/null)"
   digest=$(delivered_digest "$sent" | grep -F 'Supervisor escalate')
@@ -2366,7 +2366,7 @@ test_digest_budget_counts_omitted_events() {
   done
   cp "$state/.subsuper-escalations" "$dir/buffer.orig"
   afk_enter "$state"
-  LOG="$dir/daemon.log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  LOG="$dir/daemon.log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_INJECT_CONFIRM_SLEEP=0.05 escalate_flush "$state" || fail "many-event digest was not delivered"
   digest=$(delivered_digest "$sent" | grep -F 'Supervisor escalate')
   assert_contains "$digest" 'Supervisor escalate (20 event(s)): event 1: x' "digest header must count every buffered event"
@@ -2389,7 +2389,7 @@ test_inject_send_failure_logs_stage_stderr_and_bytes() {
   escalate_add "$state" "$item"
   cp "$state/.subsuper-escalations" "$dir/buffer.orig"
   afk_enter "$state"
-  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_FAKE_SEND_MAX_BYTES=100 FM_INJECT_CONFIRM_SLEEP=0.05 escalate_flush "$state"; then
     fail "escalate_flush reported success although the transport refused the send"
   fi
@@ -2400,7 +2400,7 @@ test_inject_send_failure_logs_stage_stderr_and_bytes() {
   fi
   [ ! -s "$sent" ] || fail "nothing may be typed when the initial send fails"
   cmp -s "$state/.subsuper-escalations" "$dir/buffer.orig" || fail "buffer changed after a failed send"
-  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_FAKE_SEND_MAX_BYTES=100 FM_INJECT_CONFIRM_SLEEP=0.05 escalate_flush "$state"; then
     fail "escalate_flush reported success on a retried refused send"
   fi
@@ -2423,7 +2423,7 @@ test_inject_enter_failure_logs_confirmation_stage() {
   touch "$dir/.swallow"
   escalate_add "$state" "needs-decision: pick C"
   afk_enter "$state"
-  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_FAKE_SWALLOW="$dir/.swallow" FM_FAKE_PERSIST_SWALLOW=1 FM_INJECT_CONFIRM_SLEEP=0.05 \
     escalate_flush "$state"; then
     fail "escalate_flush reported success on a swallowed Enter"
@@ -2447,7 +2447,7 @@ test_bounded_digest_full_text_kept_after_typing() {
   escalate_add "$state" "$item"
   cp "$state/.subsuper-escalations" "$dir/buffer.orig"
   afk_enter "$state"
-  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_FAKE_SWALLOW="$dir/.swallow" FM_FAKE_PERSIST_SWALLOW=1 FM_INJECT_CONFIRM_SLEEP=0.05 \
     escalate_flush "$state"; then
     fail "escalate_flush reported success on a swallowed Enter"
@@ -2456,13 +2456,13 @@ test_bounded_digest_full_text_kept_after_typing() {
   full=$(printf '%s' "$digest" | sed -n 's/.*full text of every event: \([^ )]*\).*/\1/p')
   [ -n "$full" ] && [ -f "$full" ] || fail "a typed bounded digest names a full-text file that was removed: $digest"
   cmp -s "$full" "$dir/buffer.orig" || fail "kept full-text file does not hold the buffered event verbatim"
-  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_INJECT_CONFIRM_SLEEP=0.05 escalate_flush "$state"; then
     fail "escalate_flush reported success while the composer still held the typed digest"
   fi
   [ -f "$full" ] || fail "a deferred retry removed the full-text file the typed digest names"
   escalate_add "$state" "needs-decision: pick D"
-  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  if LOG="$log" PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_INJECT_CONFIRM_SLEEP=0.05 escalate_flush "$state"; then
     fail "escalate_flush reported success while the composer still held the typed digest"
   fi
@@ -2480,7 +2480,7 @@ test_below_max_defer_does_nothing() {
   escalate_add "$state" "needs-decision: pick A"
   date +%s > "$state/.subsuper-escalations.since"   # just now
   afk_enter "$state"
-  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_FAKE_TMUX_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_TMUX_PANE_ALIVE=1 FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux FM_FAKE_TMUX_SENT="$sent" \
     FM_FAKE_TMUX_CAPTURE="$capture" FM_FAKE_TMUX_CURSOR_Y=0 \
     FM_ESCALATE_BATCH_SECS=99999 FM_MAX_DEFER_SECS=300 housekeeping "$state"
   [ ! -s "$sent" ] || fail "injected before MAX_DEFER elapsed"
@@ -2496,7 +2496,7 @@ test_max_defer_afk_inactive_does_not_flush_or_alarm() {
   sent="$dir/sent.log"; : > "$sent"
   escalate_add "$state" "needs-decision: pick B"
   echo $(( $(date +%s) - 600 )) > "$state/.subsuper-escalations.since"
-  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" \
+  PATH="$fakebin:$PATH" FM_FAKE_COMPOSER="$dir/composer" FM_FAKE_SENT="$sent" FM_SUPERVISOR_TARGET=fm-sup:0 FM_SUPERVISOR_BACKEND=tmux \
     FM_ESCALATE_BATCH_SECS=99999 FM_MAX_DEFER_SECS=60 FM_INJECT_CONFIRM_SLEEP=0.05 \
     housekeeping "$state"
   [ ! -s "$sent" ] || fail "injected while afk was inactive"
