@@ -2011,20 +2011,15 @@ fm_super_main() {
     # has nowhere to go, and firstmate itself is the consumer of escalations.
     # Catch-up signals persist in state/*.status and flow on the next run, so
     # this delays rather than loses work.
-    if [ -n "$TARGET" ]; then
-      r_alive=0
-      if [ "$BACKEND" = tty ]; then
-        [ -w "$TARGET" ] && r_alive=1
-      elif fm_backend_target_exists "$BACKEND" "$TARGET" 2>/dev/null; then
-        r_alive=1
-      fi
-      if [ "$r_alive" -ne 1 ]; then
-        log "warn: supervisor target '$TARGET' gone; backing off ${INJECT_FAIL_SLEEP}s, will retry"
-        # Flush is pointless with no pane; preserve any buffered escalations.
-        sleep "$INJECT_FAIL_SLEEP"
-        continue
-      fi
-    elif [ "$FM_SUPERVISOR_TARGET_SOURCE" = UNAVAILABLE ]; then
+    # The UNAVAILABLE source is checked FIRST: inject_msg's stale-binding
+    # disarm clears the globals while the loop's local TARGET still holds the
+    # dead pane - if the pane-gone guard ran first it would sleep forever on
+    # that ghost and housekeeping (the wedge alarm) would never fire.
+    if [ "$FM_SUPERVISOR_TARGET_SOURCE" = UNAVAILABLE ]; then
+      TARGET=
+      BACKEND=
+      FM_SUPERVISOR_TARGET=
+      FM_SUPERVISOR_BACKEND=
       # Degraded mode: pane escalation is OFF but housekeeping must still
       # run below - it is what makes the wedge alarm fire. Re-resolve on a
       # bounded cadence so a session-start binding or pane env appearing
@@ -2051,6 +2046,19 @@ fm_super_main() {
             log "resolved supervisor '$r_backend:$r_target' ($r_source) is not deliverable; staying UNAVAILABLE"
           fi
         fi
+      fi
+    elif [ -n "$TARGET" ]; then
+      r_alive=0
+      if [ "$BACKEND" = tty ]; then
+        [ -w "$TARGET" ] && r_alive=1
+      elif fm_backend_target_exists "$BACKEND" "$TARGET" 2>/dev/null; then
+        r_alive=1
+      fi
+      if [ "$r_alive" -ne 1 ]; then
+        log "warn: supervisor target '$TARGET' gone; backing off ${INJECT_FAIL_SLEEP}s, will retry"
+        # Flush is pointless with no pane; preserve any buffered escalations.
+        sleep "$INJECT_FAIL_SLEEP"
+        continue
       fi
     fi
 

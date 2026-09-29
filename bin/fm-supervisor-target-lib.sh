@@ -138,12 +138,23 @@ fm_supervisor_session_read() {  # <state> -> raw record line
   printf '%s\n' "$line"
 }
 
-# Split a record line into the globals named by the caller. Never evals: fields
-# are positional and read-only.
+# Split a record line into the globals named by the caller. Never evals and
+# never `read`s with IFS=$'\t': tab is IFS whitespace, so an empty field
+# (verifier-less herdr record carrying an alarm terminal) would collapse and
+# shift the terminal into the verifier slot. Positional expansion preserves
+# empty fields exactly.
 fm_supervisor_session_fields() {  # <line> <backend-var> <target-var> <verifier-var> <alarmtty-var>
-  local line=$1
+  local line=$1 rest
   local _b _t _v _a
-  IFS=$'\t' read -r _b _t _v _a <<< "$line"
+  _b=${line%%$'\t'*}
+  rest=${line#*$'\t'}
+  _t=${rest%%$'\t'*}
+  rest=${rest#*$'\t'}
+  _v=${rest%%$'\t'*}
+  case "$rest" in
+    *$'\t'*) _a=${rest#*$'\t'} ;;
+    *) _a= ;;
+  esac
   printf -v "$2" '%s' "$_b"
   printf -v "$3" '%s' "$_t"
   printf -v "$4" '%s' "$_v"

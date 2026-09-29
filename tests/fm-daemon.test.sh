@@ -3248,6 +3248,22 @@ test_supervisor_session_bind_verify_and_drift() {
   pass "session binding: tmux record resolves BOUND while the pane lives and goes UNAVAILABLE when it dies"
 }
 
+test_supervisor_session_fields_preserves_empty_verifier() {
+  # A herdr binding has an empty verifier with a real alarm_tty behind it:
+  # IFS-tab collapse would shift the slots and misread alarm_tty as the
+  # verifier (Greptile P1). Positional parse must keep every slot exact.
+  local b t v a
+  fm_supervisor_session_fields "$(printf 'herdr\tw:p2\t\t/dev/pts/5:pts/5:777')" b t v a \
+    || fail "a 4-slot herdr record did not parse"
+  [ "$b" = herdr ] && [ "$t" = 'w:p2' ] && [ -z "$v" ] && [ "$a" = '/dev/pts/5:pts/5:777' ] \
+    || fail "empty verifier slot collapsed fields: b=$b t=$t v=$v a=$a"
+  fm_supervisor_session_fields "$(printf 'tmux\t%%1\tpane_pid:9\t/dev/pts/6:pts/6:8')" b t v a \
+    || fail "a 4-slot tmux record did not parse"
+  [ "$b" = tmux ] && [ "$t" = '%1' ] && [ "$v" = 'pane_pid:9' ] && [ "$a" = '/dev/pts/6:pts/6:8' ] \
+    || fail "tmux record parsed wrong: b=$b t=$t v=$v a=$a"
+  pass "session fields: an empty verifier keeps its slot - alarm_tty never shifts into it"
+}
+
 test_inject_msg_bound_identity_reverified_before_delivery() {
   command -v tmux >/dev/null 2>&1 || { pass "skipped: real tmux unavailable"; return 0; }
   local dir state session pane pid
@@ -3511,6 +3527,7 @@ test_resolve_returns_unavailable_not_the_fallback_constant
 test_resolve_precedence_explicit_bound_tmuxpane_herdr
 test_inject_msg_unavailable_never_touches_a_pane
 test_supervisor_session_bind_verify_and_drift
+test_supervisor_session_fields_preserves_empty_verifier
 test_inject_msg_bound_identity_reverified_before_delivery
 test_inject_msg_tty_backend_writes_to_bound_terminal
 test_wedge_alarm_tty_channel_independent_of_pane_path

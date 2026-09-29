@@ -404,15 +404,21 @@ fm_afk_launch_entry_cmd() {
 # itself; the launcher names it here (bin/fm-supervise-daemon.sh
 # fm_daemon_primary_harness).
 fm_afk_launch_daemon_cmd() {  # <captain-target> <captain-backend> [bound 0|1]
+  # A hosted daemon terminal's ambient discovery env names the HOST's pane,
+  # never the captain's: the new pane's $TMUX_PANE is itself, and a herdr
+  # workspace pane marks its own session. env -u strips those markers so the
+  # daemon can only arm an explicit pass-through or the verified session
+  # binding - never a fallback that resolves to its own pane
+  # (kunchenguid/firstmate#1506).
   if [ "${3:-0}" = 1 ]; then
     # A bound captain identity must NOT be pinned through explicit
     # FM_SUPERVISOR_* env: the daemon re-resolves and re-verifies the
     # session record itself before every injection (a hard pin would
     # smuggle a stale identity past that same-session check).
-    printf 'exec env FM_HOME=%q FM_DAEMON_PRIMARY_HARNESS=%q %q' \
+    printf 'exec env -u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION FM_HOME=%q FM_DAEMON_PRIMARY_HARNESS=%q %q' \
       "$FM_HOME" "$(fm_afk_launch_primary_harness)" "$(fm_afk_launch_entry_cmd)"
   else
-    printf 'exec env FM_HOME=%q FM_SUPERVISOR_TARGET=%q FM_SUPERVISOR_BACKEND=%q FM_DAEMON_PRIMARY_HARNESS=%q %q' \
+    printf 'exec env -u TMUX_PANE -u HERDR_ENV -u HERDR_PANE_ID -u HERDR_SESSION FM_HOME=%q FM_SUPERVISOR_TARGET=%q FM_SUPERVISOR_BACKEND=%q FM_DAEMON_PRIMARY_HARNESS=%q %q' \
       "$FM_HOME" "$1" "$2" "$(fm_afk_launch_primary_harness)" "$(fm_afk_launch_entry_cmd)"
   fi
 }
@@ -729,19 +735,27 @@ fm_afk_launch_start() {
   # Capture the captain identity FIRST, before creating anything, through
   # the single resolver: explicit env > this home's verified session-start
   # binding > this terminal's own pane env (truthful HERE - the daemon's
-  # separate terminal would only see itself). UNAVAILABLE refuses cleanly
-  # instead of arming the firstmate:0 constant (kunchenguid/firstmate#1506).
+  # separate terminal would only see itself). UNAVAILABLE is a verdict, not
+  # a refusal: the daemon still launches and enters its degraded watch -
+  # buffering escalations, re-resolving on the inject-fail cadence, and
+  # re-arming the moment a real operator session appears - instead of
+  # arming the firstmate:0 constant (kunchenguid/firstmate#1506).
   local captain_line captain_source
-  captain_line=$(fm_supervisor_resolve "$FM_AFK_LAUNCH_STATE") || {
-    fm_afk_launch_log "could not resolve the captain supervisor session (no FM_SUPERVISOR_TARGET, no verified $FM_SUPERVISOR_SESSION_NAME record, no TMUX_PANE/HERDR_ENV); set FM_SUPERVISOR_TARGET, or run start-native inside the captain session"
-    return 1; }
-  IFS=$'\t' read -r captain_backend captain_target captain_source <<< "$captain_line"
+  if captain_line=$(fm_supervisor_resolve "$FM_AFK_LAUNCH_STATE"); then
+    IFS=$'\t' read -r captain_backend captain_target captain_source <<< "$captain_line"
+  else
+    captain_backend=UNAVAILABLE
+    captain_target=
+    captain_source=UNAVAILABLE
+    fm_afk_launch_log "no captain supervisor session resolvable (no FM_SUPERVISOR_TARGET, no verified $FM_SUPERVISOR_SESSION_NAME record, no TMUX_PANE/HERDR_ENV); launching the daemon in UNAVAILABLE degraded mode - it buffers escalations and re-arms when an operator session appears"
+  fi
   # A bound identity stays bound: the daemon re-reads and re-verifies the
   # session record itself, so it must NOT be pinned via FM_SUPERVISOR_*
   # env. Env-discovered or explicitly declared captains still need that
   # pass-through - the daemon's separate terminal cannot rediscover them.
+  # UNAVAILABLE carries no identity to pin, so it launches bound-env too.
   local inherit_bound=0
-  case "$captain_source" in BOUND\(*) inherit_bound=1 ;; esac
+  case "$captain_source" in BOUND\(*|UNAVAILABLE) inherit_bound=1 ;; esac
 
   mkdir -p "$FM_AFK_LAUNCH_STATE"
 
@@ -794,6 +808,16 @@ fm_afk_launch_start() {
           fm_afk_launch_create_tmux "$captain_target" "$captain_backend" "$inherit_bound"; result=$?
         else
           fm_afk_launch_log "captain is on a bare terminal ($captain_target) and tmux is not installed to host a detached daemon terminal; run 'fm-afk-launch.sh start-native' inside the captain session instead"
+          result=1
+        fi ;;
+      UNAVAILABLE)
+        # No identity yet, still supervise: host the daemon in a detached
+        # tmux session exactly like a tty captain's - it watches degraded
+        # and re-arms when an operator session becomes resolvable.
+        if command -v tmux >/dev/null 2>&1; then
+          fm_afk_launch_create_tmux "$captain_target" "$captain_backend" "$inherit_bound"; result=$?
+        else
+          fm_afk_launch_log "no captain session resolvable and tmux is not installed to host a detached daemon terminal; run 'fm-afk-launch.sh start-native' inside the captain session instead"
           result=1
         fi ;;
       *)
