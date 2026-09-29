@@ -1898,6 +1898,18 @@ fm_super_main() {
   # and wedge alarm (bound tty / configured channels) all keep running, and
   # a binding written later re-arms pane delivery without a restart.
   local resolved_line r_backend r_target r_source r_alive
+  # A declared backend is a configuration fact independent of resolution: an
+  # explicit FM_SUPERVISOR_BACKEND name outside the supported set is a typo'd
+  # pin that must fail loudly even when no target resolves, never hide behind
+  # an UNAVAILABLE verdict and leave the daemon supervising degraded forever.
+  if [ -n "${FM_SUPERVISOR_BACKEND:-}" ] \
+      && ! fm_backend_list_contains "$FM_SUPERVISOR_SUPPORTED_BACKENDS" "$FM_SUPERVISOR_BACKEND"; then
+    echo "error: away-mode daemon does not support supervisor backend '$FM_SUPERVISOR_BACKEND' yet (supported: $FM_SUPERVISOR_SUPPORTED_BACKENDS); set FM_SUPERVISOR_BACKEND=tmux|herdr and FM_SUPERVISOR_TARGET to run firstmate's own pane under a supported backend" >&2
+    log "startup failed: unsupported supervisor backend '$FM_SUPERVISOR_BACKEND' (explicit env)"
+    fm_lock_release "$LOCK" 2>/dev/null || true
+    rm -f "$PIDFILE" 2>/dev/null || true
+    exit 1
+  fi
   if resolved_line=$(fm_supervisor_resolve "$STATE"); then
     IFS=$'\t' read -r r_backend r_target r_source <<< "$resolved_line"
   else
