@@ -1,0 +1,8 @@
+Real supervision engine CLI, isolated config home
+claude absent: exit=0
+codex absent: exit=1
+codex engine set: exit=0
+claude engine and inherited off: exit=1
+codex engine and inherited off: exit=1
+claude engine after clearing off: exit=0
+claude with dangling off symlink: exit=1

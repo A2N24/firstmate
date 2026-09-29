@@ -1,0 +1,8 @@
+primary off -> mate sync status=0
+mate off file: present
+mate host enabled (Claude): exit=1
+mate engine retained: claude haiku
+primary clears off -> mate convergence status=0
+mate off file: absent
+mate host enabled (Claude): exit=0
+mate engine retained: claude haiku
