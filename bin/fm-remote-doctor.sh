@@ -67,8 +67,6 @@ FM_ROOT="${FM_ROOT_OVERRIDE:-$(CDPATH='' cd "$SCRIPT_DIR/.." && pwd -P)}"
 . "$SCRIPT_DIR/fm-tasks-axi-lib.sh"
 # shellcheck source=bin/fm-remote-herdr-owner-lib.sh
 . "$SCRIPT_DIR/fm-remote-herdr-owner-lib.sh"
-# shellcheck source=bin/fm-home-drift-lib.sh
-if [ -f "$SCRIPT_DIR/fm-home-drift-lib.sh" ]; then . "$SCRIPT_DIR/fm-home-drift-lib.sh" && fm_home_drift_warn; fi
 REQUIRED_TOOLS=(git jq herdr tasks-axi treehouse)
 HARNESS_TOOLS=(claude codex opencode pi pi-signed grok kimi)
 OPTIONAL_TOOLS=(tmux no-mistakes gh)
