@@ -1,0 +1,3 @@
+cycle=1 records=2030 elapsed=0.132s exit=0 stdout='' stderr=''
+cycle=2 records=2030 elapsed=0.141s exit=0 stdout='' stderr=''
+cycle=3 records=2030 elapsed=0.133s exit=0 stdout='' stderr=''
