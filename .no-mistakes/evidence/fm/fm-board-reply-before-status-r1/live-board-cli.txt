@@ -1,0 +1,49 @@
+VERSION: 0.1.80
+BEFORE: error: Lavish Editor expects an HTML file
+code: VALIDATION_ERROR
+help[1]: Run `lavish-axi <html-file>`
+ARM: registered: lavish-20cc52b0c5831c6a (lavish, task=worker-one)
+armed: lavish-20cc52b0c5831c6a
+artifact: /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3QKA85XN6K9C1G2J2ZD7MDN/.live-board/board.html
+owner-task: worker-one
+AFTER: error: Lavish Editor expects an HTML file
+code: VALIDATION_ERROR
+help[1]: Run `lavish-axi <html-file>`
+REGISTERED: SOURCE                       ADAPTER      OWNER      PENDING
+lavish-20cc52b0c5831c6a      lavish       task:worker-one/listening 0
+
+ADVERSARIAL OWNER ARM:
+error: cannot replace task-owned source lavish-20cc52b0c5831c6a owned by task worker-one; steer that task to re-arm its board
+refusal exit=1
+OWNER REARM WITHOUT ROUND:
+error: cannot re-arm source lavish-20cc52b0c5831c6a: task worker-one already holds this board and no captured round is waiting to be acknowledged
+refusal exit=1
+ENDPOINTLESS ARM:
+REFUSED: task worker-three has no regular endpoint metadata at /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3QKA85XN6K9C1G2J2ZD7MDN/.live-board/home/state/worker-three.meta; preserving task state.
+error: cannot own a board for task worker-three; its captured feedback would reach no endpoint
+refusal exit=1
+STAGED INPUT: INTRUDER SHOULD NOT POST
+
+UNKNOWN VERSION ARM:
+error: cannot confirm a supported lavish-axi version, so the staged reply was not posted; retry once `lavish-axi --version` reports a supported release
+error: cannot arm source lavish-70edb58232d9af35: its staged reply was not delivered
+refusal exit=1
+STAGED INPUT: UNKNOWN SHOULD NOT POST
+UNKNOWN BOARD REGISTRATION: none
+VERSION PROBE CLASSIFICATION: probe exit=2
+
+CURRENT VERSION CLASSIFICATION: exit=0
+BOARD MESSAGE PERSISTED: /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3QKA85XN6K9C1G2J2ZD7MDN/.live-board/store/state.json
+
+LEGACY VERSION: 0.1.79
+LEGACY CLASSIFICATION: exit=1
+LEGACY ARM:
+registered: lavish-74c1453682795bd3 (lavish, task=worker-legacy)
+armed: lavish-74c1453682795bd3
+artifact: /Users/kunchen/.no-mistakes/worktrees/52b07e9083e7/01M3QKA85XN6K9C1G2J2ZD7MDN/.live-board/legacy.html
+owner-task: worker-legacy
+exit=0
+LEGACY STATE: lavish-74c1453682795bd3      lavish       task:worker-legacy/listening 0
+store status=ended agent_chat=['Board decision ready from worker one\n']
+store status=ended agent_chat=[]
+legacy-store status=ended agent_chat=['legacy reply arrived']
