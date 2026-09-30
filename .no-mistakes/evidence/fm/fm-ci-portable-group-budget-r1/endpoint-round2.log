@@ -1,0 +1,8 @@
+Terminated: 15
+remaining hung descendant processes=0
+ok - a hung per-task endpoint read hits its configured bound, reports the task, and leaves nothing stuck
+2s case elapsed_seconds=14
+Terminated: 15
+remaining hung descendant processes=0
+ok - a padded-zero per-read bound falls back to the 10s default instead of removing the bound
+fallback 10s case elapsed_seconds=21

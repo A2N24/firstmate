@@ -1,0 +1,11 @@
+ok - portable shard union, disjointness, and coverage guard hold
+ok - portable parallel lanes are fully hinted and packed within 5% of each other
+ok - portable serial shards are a deterministic disjoint cover of the serial lane
+ok - coverage guard bounds the unmeasured share and serial packing within twenty minutes
+weight=1200000 exit=0
+FM_TEST_COVERAGE ok total=241 parallel=24 parallel_max_ms=665545 parallel_imbalance_ms=2 parallel_unhinted=0 serial=201 serial_shards=9 serial_unhinted=0 serial_max_ms=1200000 serial_budget_ms=1200000 herdr=16
+weight=1200001 exit=1
+fm-test-run: coverage guard: largest portable serial shard packs 1200001ms above the 1200000ms target
+fm-test-run: refresh CI hints and rebalance or add shards; do not raise the job timeout: docs/fm-test-portable-shards.md
+ok - serial packing accepts the exact budget and refuses one millisecond above it
+ok - portable serial shard lanes refuse mismatched, out-of-range, and countless names

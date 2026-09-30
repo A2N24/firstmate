@@ -1,0 +1,19 @@
+Focused Test fix-round evidence
+
+Before editing: executed test_portable_serial_hint_coverage_is_reported_and_bounded from tests/fm-test-run.test.sh in a disposable harness retaining definitions and omitting unrelated top-level case calls.
+Result: ok - coverage guard bounds the unmeasured share and serial packing within twenty minutes
+Root cause of the finding: existing coverage checked only current modeled packing, not executable acceptance/refusal at the boundary; no failing product test was reported or reproduced.
+
+After editing: executed the new test_portable_serial_packing_budget_boundary in the same focused harness style.
+Command: TMPDIR="$PWD/.test-phase-tmp" bash tests/.focused-runner.test.sh
+Result: ok - serial packing accepts the exact budget and refuses one millisecond above it
+The fixture executes the copied production runner with --check-coverage, preserves the full inventory and policy, and changes one measured timing hint. It asserts exit 0 with serial_max_ms=1200000 and serial_budget_ms=1200000, then exit 1 with the clear 1200001ms/1200000ms diagnostic and no success marker. Assertions are on executable output and exit status, not source text.
+
+Executed only test_endpoint_read_hang_is_bounded_and_reported and test_endpoint_bound_rejects_padded_zero from tests/fm-session-start.test.sh in a disposable harness retaining definitions and omitting unrelated top-level case calls. The harness redirected temporary cleanup paths inside the worktree and retained generated digest output; endpoint settings and assertions were unchanged.
+Command: ENDPOINT_EVIDENCE="$PWD/.test-phase-tmp/endpoint-digests.log" TMPDIR="$PWD/.test-phase-tmp" bash tests/.focused-session-start.test.sh
+Result: exit 0
+ok - a hung per-task endpoint read hits its configured bound, reports the task, and leaves nothing stuck
+ok - a padded-zero per-read bound falls back to the 10s default instead of removing the bound
+Both cases retain FM_HOME_SUMMARY_TIMEOUT=5; their actual production endpoint reads hit the configured 2s bound and the invalid 00 fallback 10s bound respectively. Both original pgrep descendant-cleanup assertions passed; both digests continued to CONTEXT. Generated digests are retained in endpoint-timeout-fix-round-digests.log. Expected timeout termination notices occurred. The original suite's unconditional final banner was emitted before the selected calls and is not evidence of a full-suite pass.
+
+No complete suite, lint, static analysis, pipeline control, or CI commands ran. Real Ubuntu CI completion margin remains for the outer CI phase. Disposable harnesses and temporary worktree artifacts were removed after verification.

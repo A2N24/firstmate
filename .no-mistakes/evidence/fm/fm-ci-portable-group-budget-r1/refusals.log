@@ -1,0 +1,13 @@
+$ bash bin/fm-test-run.sh --lane portable-serial-1of9 --jobs 2 --list
+tests/fm-watch-triage.test.sh
+exit=0
+$ bash bin/fm-test-run.sh --lane portable-serial-1of8 --list
+fm-test-run: lane 'portable-serial-1of8' asks for 8 portable serial shards but this runner is configured for 9 (see --list-lanes)
+exit=2
+Fault injection: isolated runner copy, watch-triage timing hint=1200001ms (budget+1); all test files retained
+fm-test-run: coverage guard: largest portable serial shard packs 1200001ms above the 1200000ms target
+fm-test-run: refresh CI hints and rebalance or add shards; do not raise the job timeout: docs/fm-test-portable-shards.md
+exit=1
+$ bash bin/fm-test-run.sh --lane portable-serial-1of9 --jobs 2
+fm-test-run: --jobs 2 refused: portable serial lanes stay serial; use --jobs 1
+exit=2
