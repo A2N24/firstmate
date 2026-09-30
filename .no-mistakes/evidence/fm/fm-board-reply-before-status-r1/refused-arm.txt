@@ -1,0 +1,5 @@
+error: cannot replace task-owned source lavish-aeb7ce563a78e42a owned by task worker; steer that task to re-arm its board
+intruder_exit=1
+error: cannot re-arm source lavish-aeb7ce563a78e42a: task worker already holds this board and no captured round is waiting to be acknowledged
+roundless_exit=1
+reply_file_intact=yes
