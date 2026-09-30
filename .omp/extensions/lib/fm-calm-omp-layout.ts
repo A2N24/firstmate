@@ -66,7 +66,6 @@ type InteractiveModeLike = {
   statusContainer?: RowContainer;
   loadingAnimation?: RowComponent;
   ui?: { requestRender?(): void };
-  getUserMessageText?(message: unknown): string;
   transcriptMessageComponents?: { get(message: object): unknown };
 };
 
@@ -221,11 +220,14 @@ export function installCalmOmpToolRowLayout(host: OmpHostExports): void {
  * constructs it. The rows that one call appends to the public transcript container are
  * this row and its spacer, so the adapter lets omp build them and then takes over their
  * drawing. A user row the canonical classifier does not recognize is never touched.
+ *
+ * omp 18.2.11 replaced the public `getUserMessageText` helper with a private one, so
+ * the row's text comes from the message's own content; `addMessageToChat` remains the
+ * one seam this adapter patches.
  */
 export function installCalmOmpOperationalUserLayout(host: OmpHostExports): void {
   const prototype = hostPrototype(host, "InteractiveMode");
   const addMessageToChat = hostMethod(prototype, "InteractiveMode", "addMessageToChat");
-  hostMethod(prototype, "InteractiveMode", "getUserMessageText");
   if (patch.installed.has("operational-user-row")) return;
 
   prototype.addMessageToChat = function (
@@ -235,15 +237,10 @@ export function installCalmOmpOperationalUserLayout(host: OmpHostExports): void 
   ): unknown {
     patch.liveMode = this;
     const children = this.chatContainer?.children;
-    if (
-      message?.role !== "user" ||
-      !contentIsTextOnly(message.content) ||
-      !Array.isArray(children) ||
-      typeof this.getUserMessageText !== "function"
-    ) {
+    if (message?.role !== "user" || !Array.isArray(children)) {
       return addMessageToChat.call(this as never, message as never, options as never);
     }
-    const text = this.getUserMessageText(message);
+    const text = textOnlyUserMessageText(message.content);
     if (!text || !patch.isOperationalInput(text)) {
       return addMessageToChat.call(this as never, message as never, options as never);
     }
@@ -259,15 +256,23 @@ export function installCalmOmpOperationalUserLayout(host: OmpHostExports): void 
   patch.installed.add("operational-user-row");
 }
 
-/** Whether a message's content is text only, so its whole row is the text this adapter read. */
-function contentIsTextOnly(content: unknown): boolean {
-  if (typeof content === "string") return true;
-  if (!Array.isArray(content) || content.length === 0) return false;
-  return content.every((block) => {
-    if (typeof block !== "object" || block === null) return false;
-    if (!("type" in block) || !("text" in block)) return false;
-    return block.type === "text" && typeof block.text === "string";
-  });
+/**
+ * The raw text of a user row whose whole content is text, or undefined when any block
+ * is not text, so a row is never read as text this adapter did not classify. omp builds
+ * its user rows through a private presenter and exposes no public user-text helper, so
+ * the message's own content is the authoritative text.
+ */
+function textOnlyUserMessageText(content: unknown): string | undefined {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content) || content.length === 0) return undefined;
+  const parts: string[] = [];
+  for (const block of content) {
+    if (typeof block !== "object" || block === null) return undefined;
+    if (!("type" in block) || !("text" in block)) return undefined;
+    if (block.type !== "text" || typeof block.text !== "string") return undefined;
+    parts.push(block.text);
+  }
+  return parts.join("\n");
 }
 
 /**

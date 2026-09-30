@@ -982,3 +982,51 @@ The boat drawn in place of the stock working row during that run, at 120 columns
                              ◿│◣
 ▁▁▁▁▁▂▂▂▃▃▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁╲▁▁▁╱▁▁▁▁▁▂▂▂▃▃▄▄▄▄▄▃▃▃▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▄▃▃▃▂▂▂▁▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▄▃▃▂▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▃▃▂
 ```
+
+## 2026-09-30 omp 18.2.11 seam change and the re-verified omp Calm
+
+omp 18.2.11 removed the public `InteractiveMode.getUserMessageText` helper that the 18.1.16 record above depended on.
+`InteractiveMode.addMessageToChat` is still on the prototype, but it now delegates to a private presenter, and the presenter builds the user row from the message content with no exported helper for that text.
+The live seam guard failed loudly the moment this host moved to 18.2.11, naming the missing seam rather than degrading quietly:
+
+```text
+$ omp --version
+omp/18.2.11
+
+$ bash tests/fm-calm-omp-seams-live.test.sh
+not ok - omp omp/18.2.11 no longer exports the host seams Calm patches: InteractiveMode.getUserMessageText (see .omp/extensions/lib/fm-calm-omp-layout.ts and docs/calm.md)
+```
+
+The operational-user-row adapter now reads the row's text from the message's own content instead of calling a host helper, so `addMessageToChat` remains the one seam that adapter patches.
+The portable suite's fake host no longer offers `getUserMessageText` either, so it mirrors the installed 18.2.11 surface and the case fails against the old adapter rather than passing over a helper the real harness has dropped.
+
+```text
+$ bash tests/fm-calm-omp-extension.test.sh
+ok - /calm toggles Calm, persists the shared per-home preference, and answers on a line that expires rather than a transcript row
+ok - the Calm preference resolves through FM_CONFIG_OVERRIDE ahead of FM_HOME
+ok - a preference that cannot be written leaves the current Calm choice unchanged and says so
+ok - tool call, tool result, and folded read rows draw at zero height under Calm and restore when it is off
+ok - a canonically classified operational user row hides under Calm, a near miss stays visible, and both restore
+ok - a short mid-turn note hides beside preserved substantive text, the final reply stays, and a toggle restores both
+ok - a missing host seam skips only its own adapter and leaves /calm and the rest of Calm working
+ok - after an in-process reload, /calm still drives the wrappers the earlier load installed
+
+$ bash tests/fm-calm-omp-seams-live.test.sh
+ok - omp omp/18.2.11: every host seam Calm's presentation adapters patch is still exported
+```
+
+A real interactive omp 18.2.11 session in a disposable lab home (`config/calm` on, the extension auto-discovered from `.omp/extensions/`, a `from-firstmate` row encoded by `bin/fm-operational-input.sh encode from-firstmate` and submitted as the first message) hid the operational row and drew the boat in the stock working row's place:
+
+```text
+ [fm-from-firstmate]OPERATIONAL_CHECK_XYZ     <- absent while Calm was on; no row drawn for it
+
+ 429 {"type":"error","error":{"type":"rate_limit_error", ...}} retry-after-ms=8533000
+ Dismissed when you send your next message.
+                                                                  ◿│◣▁╲▁▁▁╱▁▁▁▁▁▂▂▃▃▃▄▄▄▄▄▃▃▂▂▂▁▁▁▁▁▁▂▂▂▃▃▃▄▄▄▄▄▄▄▃▃▃
+```
+
+The provider refused that turn with a rate limit, which is enough to prove the message reached submission and the turn began: the row was drawn by the client before any reply, and Calm kept it hidden.
+`/calm` off on the same live screen restored the row in place, and `/calm` on hid it again, with the shared `config/calm` preference following the toggle.
+
+A lab used to drive this by hand must contain `bin/fm-operational-input.sh` at the path `.pi/extensions/lib/fm-operational-input.ts` resolves (`<project>/bin/fm-operational-input.sh`), because the canonical classifier shells out to that owner.
+A lab without it classifies nothing, so every operational row stays visible and the adapter looks broken when it is not.

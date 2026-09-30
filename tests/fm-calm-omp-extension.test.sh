@@ -99,9 +99,14 @@ export class InteractiveMode {
     this.renders = 0;
     this.ui = { requestRender: () => { this.renders += 1; } };
   }
-  getUserMessageText(message) { return message.content.map((block) => block.text).join(""); }
+  // omp 18.2.11 builds the row from the message content inside a private presenter and
+  // exports no `getUserMessageText`, so the fake host offers none either.
   addMessageToChat(message) {
-    const row = new UserRow([this.getUserMessageText(message)]);
+    const text =
+      typeof message.content === "string"
+        ? message.content
+        : message.content.map((block) => block.text).join("");
+    const row = new UserRow([text]);
     this.chatContainer.children.push(row);
     return row;
   }

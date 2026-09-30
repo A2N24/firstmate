@@ -29,7 +29,7 @@ cat > "$TMP_ROOT/probe.ts" <<'TS'
 import { writeFileSync } from "node:fs";
 
 const SEAMS: Record<string, string[]> = {
-  InteractiveMode: ["addMessageToChat", "getUserMessageText", "ensureLoadingAnimation"],
+  InteractiveMode: ["addMessageToChat", "ensureLoadingAnimation"],
   AssistantMessageComponent: ["updateContent"],
   ToolExecutionComponent: ["render"],
   ReadToolGroupComponent: ["render"],

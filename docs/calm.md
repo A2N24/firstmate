@@ -195,9 +195,10 @@ Nothing is rewritten: hidden content stays in the message, the model context, se
 
 Calm has no numeric omp version minimum or maximum and never refuses omp solely because its version is newer than a previously verified version.
 omp's extension UI context exposes no working-row visibility control and no collapsed-thinking label, and omp ships no built-in `ToolDefinition` factories, so unlike Pi, Calm reaches every row through `ExtensionAPI.pi`, the host package's own exports, and patches exactly one presentation method per adapter.
+omp keeps its user-text helper private, so an operational user row is classified from the message's own content, which `InteractiveMode.addMessageToChat` still receives; that call is the one seam the operational-row adapter patches.
 Each adapter probes the exact host method it patches when Calm loads; if a future omp removes one, Calm logs a diagnostic naming the unavailable adapter and skips only that adapter, and `/calm`, the other adapters, and unrelated omp extensions remain available.
 
-Bounds of the omp support, verified on omp 18.1.16:
+Bounds of the omp support, verified on omp 18.2.11:
 
 - omp hands its transcript row a display slice with the tool calls removed and a plain `stop` reason, so the shared mid-turn rule is answered from the session's own settled messages and carried to the row through omp's message-to-component map. A row whose message never reaches that map keeps its stock drawing.
 - A transcript restored by a resumed session is classified at the session's first agent run rather than as it is drawn, so a restored working note is visible until then.
