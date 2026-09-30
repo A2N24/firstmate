@@ -200,9 +200,11 @@ Each adapter probes the exact host method it patches when Calm loads; if a futur
 
 Bounds of the omp support, verified on omp 18.2.11:
 
-- omp hands its transcript row a display slice with the tool calls removed and a plain `stop` reason, so the shared mid-turn rule is answered from the session's own settled messages and carried to the row through omp's message-to-component map. A row whose message never reaches that map keeps its stock drawing.
+- omp hands its transcript row a display slice with the tool calls removed and a plain `stop` reason, so the shared mid-turn rule is answered from the session's own settled messages and carried to the row through omp's message-to-component map.
+- A row whose message never reaches that map keeps its stock drawing.
 - A transcript restored by a resumed session is classified at the session's first agent run rather than as it is drawn, so a restored working note is visible until then.
-- Expanded reasoning stays visible, as on Pi. omp draws nothing for thinking while its own thinking-block display is off, so Calm has no collapsed-thinking residue to hide and installs no adapter for it.
+- Expanded reasoning stays visible, as on Pi.
+- omp draws nothing for thinking while its own thinking-block display is off, so Calm has no collapsed-thinking residue to hide and installs no adapter for it.
 - Rows the terminal has already scrolled out of the live screen keep the drawing they were emitted with, the same bound the Claude Code main-screen layout has.
 
 ### omp regression entry points
