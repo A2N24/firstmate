@@ -1,0 +1,9 @@
+Targeted real host fixture scenarios, start 2026-09-30T04:06:58Z
+ok - host: dialog a turn never completed with its report (a park boundary, a stopped turn, no report) reaches the next turn
+ok - host: an engine turn is bounded, and tool processes outside its process group are reaped
+ok - host: a restarted host stops, by recorded identity, the cycle a killed predecessor left running
+ok - host: the park ends itself with a boundary wake and a stopped watcher
+ok - host: waiting closes cannot carry the park past its boundary
+ok - host: a close whose margin runs out while the successor starts reaches main at the boundary without a turn
+ok - host: an unchanged held outcome reaches the captain once across cadences, and a later decision on the task still does
+exit=0 elapsed=293s end=2026-09-30T04:11:51Z
