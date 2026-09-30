@@ -1,0 +1,8 @@
+Primary off -> mate inherits, even with mate-local engine line:
+mate inherited opt-out: yes
+mate gate: off
+Adversarial mate local edit -> primary convergence restores off:
+mate gate restored: off
+Primary removes opt-out -> mate converges back to local engine:
+mate inherited opt-out removed: yes
+mate gate: on

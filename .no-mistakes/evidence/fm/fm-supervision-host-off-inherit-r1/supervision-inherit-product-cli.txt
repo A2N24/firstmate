@@ -1,0 +1,6 @@
+Scenario: explicit off overrides mate own host engine
+mate: inherited flag present; host disabled despite own engine
+Scenario: primary clears off; mate converges to local engine
+mate: inherited flag absent; host enabled; engine=claude
+Scenario: symlink flag cannot bypass off gate
+mate: symlink flag denies host
