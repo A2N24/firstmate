@@ -1,6 +1,6 @@
 // Firstmate Calm's omp (Oh My Pi) presentation adapters.
 //
-// Verified against omp 18.1.16. omp is a Pi fork, and its extension API keeps Pi's
+// Verified against omp 18.2.11. omp is a Pi fork, and its extension API keeps Pi's
 // registration surface, but its `ExtensionUIContext` has no `setWorkingVisible` and no
 // `setHiddenThinkingLabel`, and it exposes no built-in `ToolDefinition` factories, so
 // Calm cannot reach omp's rows the way `.pi/extensions/fm-calm.ts` reaches Pi's. What

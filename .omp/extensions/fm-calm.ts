@@ -1,6 +1,6 @@
 // Firstmate's home-persistent omp (Oh My Pi) transcript presentation toggle.
 //
-// Verified against omp 18.1.16, which exposes `pi.registerCommand`, `session_start`,
+// Verified against omp 18.2.11, which exposes `pi.registerCommand`, `session_start`,
 // `agent_start`/`agent_end`, `ExtensionUIContext.setStatus()`, `ExtensionAPI.pi` (the
 // host package's own exports), and isolated managed timers on the handler context.
 // omp is a Pi fork, so `/calm` means the same thing here as in `.pi/extensions/fm-calm.ts`
